@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-rajdhani: "Rajdhani", sans-serif;
+  --font-teko: "Teko", sans-serif;
+
+  --color-neon: #facc15;
+  --color-neon-hover: #eab308;
+
+  --shadow-neon: 0 0 10px #facc15, 0 0 20px #facc15;
+  --shadow-neon-lg: 0 0 20px #facc15, 0 0 40px #facc15;
+}
+
+@layer base {
+  body {
+    @apply font-rajdhani bg-zinc-950 text-gray-100 antialiased overflow-x-hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-teko font-bold uppercase tracking-wide;
+  }
+}
+
+@layer components {
+  .section-container {
+    @apply container mx-auto px-4 py-16 md:py-24 max-w-7xl;
+  }
+
+  .card-hover {
+    @apply transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg hover:shadow-neon/20;
+  }
+
+  .text-neon-glow {
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+  }
+}
