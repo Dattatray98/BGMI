@@ -5,10 +5,12 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { Trophy, Crosshair, Users, Target, Shield, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function Leaderboard() {
+    const { user } = useAuth();
     const { teams } = useLeaderboard();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
@@ -50,15 +52,17 @@ export default function Leaderboard() {
                                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-zinc-500 focus:border-yellow-500/50 outline-none transition-all backdrop-blur-sm"
                             />
                         </div>
-                        <Button
-                            variant="neonOutline"
-                            size="lg"
-                            className="flex items-center gap-2 w-full md:w-auto font-teko text-lg tracking-wider"
-                            onClick={() => navigate("/admin")}
-                        >
-                            <Shield className="w-5 h-5" />
-                            UPDATE STANDINGS
-                        </Button>
+                        {user?.role === 'admin' && (
+                            <Button
+                                variant="neonOutline"
+                                size="lg"
+                                className="flex items-center gap-2 w-full md:w-auto font-teko text-lg tracking-wider"
+                                onClick={() => navigate("/admin/leaderboard/update")}
+                            >
+                                <Shield className="w-5 h-5" />
+                                UPDATE STANDINGS
+                            </Button>
+                        )}
                     </div>
                     <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm shadow-xl">
                         <table className="w-full text-left border-collapse">

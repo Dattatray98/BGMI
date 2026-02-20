@@ -4,11 +4,11 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import Navbar from "@/components/layout/Navbar";
-import { Trash2, Plus, Save, RefreshCw, Search } from "lucide-react";
+import { Trash2, Plus, Save, Search } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 export default function Admin() {
-    const { teams, updateTeams, resetTeams } = useLeaderboard();
+    const { teams, updateTeams } = useLeaderboard();
     const navigate = useNavigate();
     const [successMessage, setSuccessMessage] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,7 +27,7 @@ export default function Admin() {
         return () => window.removeEventListener("keydown", handleGlobalKeyDown);
     }, []);
 
-    const { control, register, handleSubmit, reset } = useForm({
+    const { control, register, handleSubmit } = useForm({
         defaultValues: {
             teams: teams.filter(team => team.isVerified),
         },
@@ -38,7 +38,7 @@ export default function Admin() {
         name: "teams",
     });
 
-    const onSubmit = (data: { teams: Team[] }) => {
+    const onSubmit = async (data: { teams: Team[] }) => {
         // We only care about name, kills, placement, wins, etc. Rank is auto-calculated.
         const updatedVerifiedTeams = data.teams.map(team => ({
             ...team,
@@ -53,21 +53,12 @@ export default function Admin() {
         const unverifiedTeams = teams.filter(t => !t.isVerified);
         const allTeams = [...updatedVerifiedTeams, ...unverifiedTeams];
 
-        updateTeams(allTeams);
+        await updateTeams(allTeams);
         setSuccessMessage("Standing update saved successfully!");
         setTimeout(() => setSuccessMessage(""), 3000);
     };
 
-    const handleReset = () => {
-        if (confirm("Are you sure you want to reset the leaderboard to default values?")) {
-            resetTeams();
-            reset({ teams: teams }); // Need to grab fresh default teams, hook state update might be slightly async but resetTeams updates context immediately. Wait, actually resetTeams sets context state. We need to re-initialize form with that new state.
-            // A simple way is reload or just manually set it. Since this component uses useLeaderboard, it will re-render with new teams.
-            // However, useForm defaultValues are only set on mount unless we use values from useForm(values: teams, resetOptions: ...).
-            // Let's rely on a key or manually reset.
-            window.location.reload();
-        }
-    };
+
 
     return (
         <div className="bg-black min-h-screen text-gray-100 font-rajdhani selection:bg-yellow-500 selection:text-black">
@@ -79,10 +70,7 @@ export default function Admin() {
                         Admin <span className="text-yellow-500">Dashboard</span>
                     </h1>
                     <div className="flex gap-4">
-                        <Button variant="destructive" onClick={handleReset} className="font-bold">
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Reset Data
-                        </Button>
+
                         <Button variant="neon" type="submit" form="admin-form" className="font-bold">
                             <Save className="w-4 h-4 mr-2" />
                             Save Changes
@@ -260,7 +248,7 @@ export default function Admin() {
                             <Button
                                 type="button"
                                 variant="secondary"
-                                onClick={() => navigate("/teams")}
+                                onClick={() => navigate("/admin/teams")}
                                 className="w-full md:w-auto text-yellow-500 border-yellow-500/20"
                             >
                                 <Plus className="w-4 h-4 mr-2" /> Add New Team

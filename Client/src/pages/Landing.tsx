@@ -5,6 +5,7 @@ import Schedule from "@/components/sections/Schedule";
 import Rules from "@/components/sections/Rules";
 import Prizes from "@/components/sections/Prizes";
 import Venue from "@/components/sections/Venue";
+import FAQ from "@/components/sections/FAQ";
 import Sponsors from "@/components/sections/Sponsors";
 import Footer from "@/components/layout/Footer";
 
@@ -36,6 +37,10 @@ export default function Landing() {
 
                 <div id="venue">
                     <Venue />
+                </div>
+
+                <div id="faq">
+                    <FAQ />
                 </div>
 
                 <div id="sponsors">

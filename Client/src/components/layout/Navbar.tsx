@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { Menu, X, Crosshair } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
 
 export default function Navbar() {
+    const { user, logout } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
@@ -21,15 +23,17 @@ export default function Navbar() {
     }, []);
 
     const navLinks = [
-        { name: "Home", href: "/", type: "link" },
-        { name: "Schedule", href: "/#schedule", type: "anchor" },
-        { name: "Prizes", href: "/#prizes", type: "anchor" },
-        { name: "Rules", href: "/#rules", type: "anchor" },
-        { name: "Venue", href: "/#venue", type: "anchor" },
-        { name: "Leaderboard", href: "/leaderboard", type: "link" },
-        { name: "Teams", href: "/teams", type: "link" },
-        { name: "Register", href: "/entry", type: "link" },
+        { name: "Home", href: "/", type: "link", protected: false },
+        { name: "Schedule", href: "/#schedule", type: "anchor", protected: false },
+        { name: "Prizes", href: "/#prizes", type: "anchor", protected: false },
+        { name: "Rules", href: "/#rules", type: "anchor", protected: false },
+        { name: "FAQ", href: "/#faq", type: "anchor", protected: false },
+        { name: "Leaderboard", href: "/leaderboard", type: "link", protected: false },
+        { name: "Admin", href: "/admin/leaderboard/update", type: "link", protected: true },
+        { name: "Teams", href: "/admin/teams", type: "link", protected: true },
     ];
+
+    const filteredLinks = navLinks.filter(link => !link.protected || (user && user.role === 'admin'));
 
     const handleNavigation = (href: string, type: string) => {
         setIsOpen(false);
@@ -65,12 +69,12 @@ export default function Navbar() {
                     onClick={() => handleNavigation("/", "link")}
                 >
                     <Crosshair className="w-8 h-8 text-yellow-500 hover:rotate-45 transition-transform duration-500" />
-                    <span>BGMI <span className="text-yellow-500">2026</span></span>
+                    <span>GENESIS E-2.0 <span className="text-yellow-500">2026</span></span>
                 </div>
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-8">
-                    {navLinks.map((link) => (
+                    {filteredLinks.map((link) => (
                         <button
                             key={link.name}
                             onClick={() => handleNavigation(link.href, link.type)}
@@ -86,9 +90,16 @@ export default function Navbar() {
                             )} />
                         </button>
                     ))}
-                    <Button variant="neon" size="sm" className="ml-4 font-teko text-lg tracking-wider" onClick={() => navigate("/entry")}>
-                        REGISTER NOW
-                    </Button>
+
+                    {user && (
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-2 text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-[0.2em] border-l border-zinc-800 pl-6 ml-2"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            LOGOUT
+                        </button>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -110,7 +121,7 @@ export default function Navbar() {
                         className="md:hidden bg-zinc-900 border-b border-zinc-800 overflow-hidden"
                     >
                         <div className="flex flex-col p-6 gap-6 items-center">
-                            {navLinks.map((link) => (
+                            {filteredLinks.map((link) => (
                                 <button
                                     key={link.name}
                                     onClick={() => handleNavigation(link.href, link.type)}
@@ -119,9 +130,16 @@ export default function Navbar() {
                                     {link.name}
                                 </button>
                             ))}
-                            <Button variant="neonOutline" className="w-full max-w-xs mt-4" onClick={() => { setIsOpen(false); navigate("/entry"); }}>
-                                REGISTER NOW
-                            </Button>
+
+                            {user && (
+                                <button
+                                    onClick={() => { setIsOpen(false); logout(); }}
+                                    className="flex items-center gap-2 text-xl font-teko text-red-500 uppercase tracking-widest mt-4"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                    LOGOUT
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}

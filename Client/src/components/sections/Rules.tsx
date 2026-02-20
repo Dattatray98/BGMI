@@ -16,10 +16,12 @@ export default function Rules() {
                         <p className="text-zinc-400 font-rajdhani text-lg mb-8 leading-relaxed">
                             Ensure fair play and competitive integrity. Familiarize yourself with the core rules before participating. Strict adherence is mandatory.
                         </p>
-                        <Button variant="outline" className="group">
-                            <FileText className="w-4 h-4 mr-2 group-hover:text-yellow-500" />
-                            DOWNLOAD FULL RULEBOOK
-                        </Button>
+                        <a href="https://drive.google.com/file/d/1f4jhtJUL1dyWbZsUtwsg1xcS2cbBD2Nv/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" className="group">
+                                <FileText className="w-4 h-4 mr-2 group-hover:text-yellow-500" />
+                                DOWNLOAD FULL RULEBOOK
+                            </Button>
+                        </a>
                     </ScrollReveal>
                 </div>
 

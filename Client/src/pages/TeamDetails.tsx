@@ -378,7 +378,7 @@ export default function TeamDetails() {
                                 {searchQuery ? `No results for "${searchQuery}"` : "No Teams Registered Yet"}
                             </h2>
                             <button
-                                onClick={() => searchQuery ? setSearchQuery("") : window.location.href = "/entry"}
+                                onClick={() => searchQuery ? setSearchQuery("") : window.location.href = "/admin/entry"}
                                 className="mt-6 text-yellow-500 hover:text-yellow-400 font-bold uppercase tracking-widest text-sm underline underline-offset-8 decoration-yellow-500/30"
                             >
                                 {searchQuery ? "Clear Search" : "Register Your Squad Now"}

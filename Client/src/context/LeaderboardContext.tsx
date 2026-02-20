@@ -1,49 +1,55 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { LEADERBOARD_DATA, type Team } from "@/constants/leaderboardData";
+import { type Team } from "@/constants/leaderboardData";
+import { useAuth } from "./AuthContext";
+import { useTeams } from "@/hooks/useTeams";
 
 interface LeaderboardContextType {
     teams: Team[];
-    updateTeams: (newTeams: Team[]) => void;
+    updateTeams: (newTeams: Team[]) => Promise<void>;
     addTeam: (teamData: Partial<Team>) => void;
     verifyTeam: (teamName: string) => void;
     resetTeams: () => void;
+    loading: boolean;
 }
 
 const LeaderboardContext = createContext<LeaderboardContextType | undefined>(undefined);
 
 export function LeaderboardProvider({ children }: { children: ReactNode }) {
-    const [teams, setTeams] = useState<Team[]>(LEADERBOARD_DATA);
+    const { user } = useAuth();
+    const { fetchTeams: getTeamsApi, updateTeamsScore: pushTeamsApi } = useTeams();
+    const [teams, setTeams] = useState<Team[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Initialize from local storage if available
+    const loadTeams = async () => {
+        setLoading(true);
+        try {
+            const data = await getTeamsApi();
+            setTeams(data);
+        } catch (error) {
+            console.error("Failed to load teams", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const storedTeams = localStorage.getItem("bgmi_leaderboard");
-        if (storedTeams) {
+        loadTeams();
+    }, [user]);
+
+    const updateTeams = async (newTeams: Team[]) => {
+        // Optimistic update
+        setTeams(newTeams);
+
+        if (user && user.role === 'admin') {
             try {
-                setTeams(JSON.parse(storedTeams));
+                await pushTeamsApi(newTeams);
             } catch (error) {
-                console.error("Failed to parse leaderboard data from local storage", error);
+                console.error('Failed to update teams on server', error);
+                // Rollback if needed
             }
         }
-    }, []);
 
-    const updateTeams = (newTeams: Team[]) => {
-        // Sort teams by total points descending, then placement points, then kills
-        // Only verified teams should be ranked on the leaderboard, 
-        // but we keep the sorting logic general for all teams in the state.
-        const sortedTeams = [...newTeams].sort((a, b) => {
-            if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-            if (b.placementPoints !== a.placementPoints) return b.placementPoints - a.placementPoints;
-            return b.totalKills - a.totalKills;
-        });
-
-        // Re-assign ranks based on sorted order
-        const rankedTeams = sortedTeams.map((team, index) => ({
-            ...team,
-            rank: index + 1
-        }));
-
-        setTeams(rankedTeams);
-        localStorage.setItem("bgmi_leaderboard", JSON.stringify(rankedTeams));
+        localStorage.setItem("bgmi_leaderboard", JSON.stringify(newTeams));
     };
 
     const addTeam = (teamData: Partial<Team>) => {
@@ -68,18 +74,17 @@ export function LeaderboardProvider({ children }: { children: ReactNode }) {
     };
 
     const resetTeams = () => {
-        setTeams(LEADERBOARD_DATA);
+        setTeams([]);
         localStorage.removeItem("bgmi_leaderboard");
     };
 
     return (
-        <LeaderboardContext.Provider value={{ teams, updateTeams, addTeam, verifyTeam, resetTeams }}>
+        <LeaderboardContext.Provider value={{ teams, updateTeams, addTeam, verifyTeam, resetTeams, loading }}>
             {children}
         </LeaderboardContext.Provider>
     );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useLeaderboard() {
     const context = useContext(LeaderboardContext);
     if (context === undefined) {

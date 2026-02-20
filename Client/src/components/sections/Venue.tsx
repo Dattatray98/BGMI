@@ -75,7 +75,15 @@ export default function Venue() {
                             </div>
                         </div>
 
-                        <Button variant="neon" className="w-full md:w-auto mt-4" onClick={() => window.open("https://maps.google.com", "_blank")}>
+                        <Button
+                            variant="neon"
+                            className="w-full md:w-auto mt-4"
+                            onClick={() => {
+                                const destination = encodeURIComponent(CONTACT.address);
+                                const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+                                window.open(googleMapsUrl, "_blank");
+                            }}
+                        >
                             GET DIRECTIONS
                         </Button>
                     </ScrollReveal>

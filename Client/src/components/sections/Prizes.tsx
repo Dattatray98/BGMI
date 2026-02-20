@@ -1,58 +1,66 @@
-import { PRIZES } from "@/constants/data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Trophy, Medal, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { Clock, IndianRupee } from "lucide-react";
+import { motion } from "framer-motion";
+import { TOURNAMENT_INFO } from "@/constants/data";
 
 export default function Prizes() {
-    const getIcon = (rank: string) => {
-        switch (rank) {
-            case "1st": return <Trophy className="w-12 h-12 mb-4 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />;
-            case "2nd": return <Medal className="w-10 h-10 mb-4 text-gray-300" />;
-            case "3rd": return <Medal className="w-10 h-10 mb-4 text-orange-600" />;
-            default: return <Star className="w-10 h-10 mb-4 text-purple-400" />;
-        }
-    };
-
     return (
-        <section className="section-container bg-black py-24 relative overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-500/5 rounded-full blur-3xl pointer-events-none" />
+        <section id="prizes" className="bg-black pt-16 pb-32 relative overflow-hidden">
+            {/* Background Aesthetic */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
 
-            <ScrollReveal>
-                <h2 className="text-4xl md:text-5xl font-teko text-center mb-16 text-white uppercase tracking-wider relative z-10">
-                    Prize <span className="text-yellow-500">Pool</span>
-                </h2>
-            </ScrollReveal>
+            <div className="relative z-10 w-full mt-8">
+                <ScrollReveal>
+                    <div className="text-center mb-10 px-4">
+                        {/* Technical Label */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-yellow-500/5 border border-yellow-500/10 mb-8 backdrop-blur-md"
+                        >
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                            <Clock className="w-3.5 h-3.5 text-yellow-500" />
+                            <span className="text-yellow-500 font-teko text-[11px] uppercase tracking-[0.4em] font-bold">Protocol: Rewards_Engaged</span>
+                        </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-                {PRIZES.map((prize, index) => (
-                    <ScrollReveal key={index} delay={index * 0.15} className="h-full">
-                        <div className="group relative h-full">
-                            <div className={cn(
-                                "absolute -inset-0.5 rounded-lg blur opacity-25 group-hover:opacity-100 transition duration-500",
-                                prize.border.replace('border-', 'bg-')
-                            )}></div>
-                            <Card className={cn(
-                                "relative h-full flex flex-col items-center justify-center text-center py-10 border-2 bg-zinc-900",
-                                prize.border
-                            )}>
-                                {getIcon(prize.rank)}
-                                <CardHeader className="pb-2">
-                                    <CardTitle className={cn("text-5xl font-teko font-bold", prize.color)}>
-                                        {prize.rank}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-3xl font-rajdhani font-semibold text-white tracking-widest">
-                                        {prize.amount}
-                                    </p>
-                                    {prize.rank === "1st" && <span className="text-xs text-yellow-500 uppercase tracking-[0.2em] mt-2 block">Grand Champion</span>}
-                                </CardContent>
-                            </Card>
+                        <h2 className="text-4xl md:text-5xl font-teko font-black text-white uppercase tracking-tighter leading-none mb-4">
+                            Tournament <span className="text-yellow-500 uppercase font-black drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">Prize Pool</span>
+                        </h2>
+                        <div className="h-0.5 w-16 bg-yellow-500/30 mx-auto rounded-full mt-6" />
+                    </div>
+
+                    <div className="relative py-12 md:py-16 overflow-hidden w-full group">
+                        {/* Background Texture & Gradient */}
+                        <div className="absolute inset-0 bg-linear-to-r from-black via-yellow-500/15 to-black h-full" />
+                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+
+                        {/* Tactical Borders */}
+                        <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-yellow-500/20 to-transparent" />
+                        <div className="absolute bottom-0 inset-x-0 h-px bg-linear-to-r from-transparent via-yellow-500/20 to-transparent" />
+
+                        {/* Animated Scanning Line */}
+                        <motion.div
+                            animate={{ x: ['-100%', '200%'] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-0 w-1/3 bg-linear-to-r from-transparent via-yellow-500/5 to-transparent skew-x-12 pointer-events-none"
+                        />
+
+                        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4">
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className="flex items-center gap-2 md:gap-6"
+                            >
+                                <IndianRupee className="w-12 h-12 md:w-28 md:h-28 text-yellow-500 filter drop-shadow-[0_0_15px_rgba(234,179,8,0.4)]" strokeWidth={2.5} />
+                                <h3 className="text-7xl md:text-[10rem] font-teko font-black text-white tracking-tighter tabular-nums leading-none drop-shadow-[0_0_50px_rgba(234,179,8,0.25)]">
+                                    {TOURNAMENT_INFO.prizePool.replace(/[^0-9,]/g, '')}
+                                </h3>
+                            </motion.div>
                         </div>
-                    </ScrollReveal>
-                ))}
+                    </div>
+                </ScrollReveal>
             </div>
         </section>
     );
