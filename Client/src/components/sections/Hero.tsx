@@ -4,6 +4,7 @@ import { MapPin, Calendar, Clock, Crosshair, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 function calculateTimeLeft() {
     // Set target date to March 15, 2026 10:30 AM
@@ -24,6 +25,7 @@ function calculateTimeLeft() {
 }
 
 export default function Hero() {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
@@ -96,6 +98,12 @@ export default function Hero() {
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-center gap-6">
+                        {user?.role === 'admin' && (
+                            <Button size="xl" variant="neon" className="gap-2 group" onClick={() => navigate("/admin/entry")}>
+                                REGISTER SQUAD
+                                <Trophy className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            </Button>
+                        )}
                         <Button size="xl" variant="neonOutline" className="gap-2 group" onClick={() => navigate("/leaderboard")}>
                             VIEW LEADERBOARD
                             <Trophy className="w-5 h-5 group-hover:rotate-45 transition-transform text-yellow-500" />
