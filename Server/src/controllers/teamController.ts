@@ -9,10 +9,6 @@ import fs from 'fs';
 export const registerTeam = async (req: Request, res: Response) => {
     let localFilePath: string | undefined;
     try {
-        console.log('--- Registration Start ---');
-        console.log('Body:', JSON.stringify(req.body, null, 2));
-        console.log('File:', req.file);
-
         const {
             teamName,
             leaderName,
@@ -29,23 +25,14 @@ export const registerTeam = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Verification document file is required' });
         }
 
-        if (!seasonId) {
-            console.log("season id missing!")
-        } else {
-            console.log(seasonId)
-        }
-
         localFilePath = req.file.path;
-        const stats = fs.statSync(localFilePath);
-        console.log(`[DEBUG] Local file exists: ${localFilePath} (${stats.size} bytes)`);
 
         // Upload to Cloudinary manually
-        console.log('[DEBUG] Calling cloudinary.uploader.upload...');
+        // Upload to Cloudinary manually
         const result = await cloudinary.uploader.upload(localFilePath, {
             folder: 'GENESIS-Cloud',
             transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
         });
-        console.log('[DEBUG] Cloudinary upload returned successfully');
 
         const documentUrl = result.secure_url;
 
@@ -53,14 +40,11 @@ export const registerTeam = async (req: Request, res: Response) => {
         fs.unlinkSync(localFilePath);
         localFilePath = undefined;
 
-        console.log('Checking for existing team:', teamName);
         const existingTeam = await Team.findOne({ teamName });
         if (existingTeam) {
-            console.warn('Team already registered:', teamName);
             return res.status(400).json({ message: 'Team name already registered' });
         }
 
-        console.log('Creating new team document...');
         const newTeam = new Team({
             teamName,
             leaderName,
@@ -74,9 +58,7 @@ export const registerTeam = async (req: Request, res: Response) => {
             seasonId
         });
 
-        console.log('Saving to MongoDB...');
         await newTeam.save();
-        console.log('Save successful!');
 
         res.status(201).json({
             message: 'Team registered successfully',
@@ -181,7 +163,7 @@ export const updateTeams = async (req: Request, res: Response) => {
 
         const bulkOps = teams.map((teamData: any) => ({
             updateOne: {
-                filter: { teamName: teamData.teamName },
+                filter: { _id: teamData._id },
                 update: {
                     $set: {
                         totalKills: teamData.totalKills,
@@ -192,8 +174,7 @@ export const updateTeams = async (req: Request, res: Response) => {
                         isVerified: teamData.isVerified,
                         seasonId: teamData.seasonId
                     }
-                },
-                upsert: true
+                }
             }
         }));
 

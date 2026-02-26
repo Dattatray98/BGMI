@@ -10,6 +10,7 @@ import { useSeasons, type Season } from '@/hooks/useSeasons';
 import { useAxios } from '@/hooks/useAxios';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { TeamCard } from '@/components/match/TeamCard';
 
 interface Match {
     _id: string;
@@ -321,7 +322,7 @@ export default function Matches() {
                                         <div className="flex gap-6 text-zinc-400 font-teko text-xl tracking-widest uppercase">
                                             <span className="flex items-center gap-2"><Gamepad2 className="w-5 h-5 text-yellow-500" /> {selectedMatch.seasonId?.title}</span>
                                             <span className="flex items-center gap-2 text-zinc-600">|</span>
-                                            <span className="flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" /> {selectedMatch.results?.length || 0} SELEME SQUADS</span>
+                                            <span className="flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" /> {selectedMatch.results?.length || 0} DEPLOYED SQUADS</span>
                                         </div>
                                     </div>
 
@@ -417,24 +418,21 @@ export default function Matches() {
                                     </div>
 
                                     {selectedMatch.results && selectedMatch.results.length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                             {selectedMatch.results.map((res: any, i: number) => (
-                                                <div key={i} className="bg-zinc-950/50 border border-zinc-800/50 rounded-2xl p-4 flex items-center justify-between group hover:border-yellow-500/50 transition-all">
-                                                    <div>
-                                                        <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">Squad {i + 1}</p>
-                                                        <h5 className="font-bold text-white uppercase tracking-wider">{res.teamId?.teamName}</h5>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">PTS</p>
-                                                        <p className="font-teko text-2xl font-bold text-yellow-500 leading-none">{res.totalPoints}</p>
-                                                    </div>
-                                                </div>
+                                                <TeamCard
+                                                    key={res._id || i}
+                                                    team={res.teamId || {}}
+                                                    points={res.totalPoints}
+                                                    rank={res.rank}
+                                                    showPlayers={true}
+                                                />
                                             ))}
                                         </div>
                                     ) : (
                                         <div className="text-center py-20 space-y-4">
                                             <Gamepad2 className="w-16 h-16 text-zinc-800 mx-auto opacity-20" />
-                                            <h5 className="text-xl font-teko text-zinc-500 uppercase tracking-widest">No squards assigned to this operation</h5>
+                                            <h5 className="text-xl font-teko text-zinc-500 uppercase tracking-widest">No squads assigned to this operation</h5>
                                             {user?.role === 'admin' && (
                                                 <Button variant="secondary" onClick={handleOpenTeamSelect} className="rounded-xl">POPULATE ROSTER</Button>
                                             )}
@@ -494,37 +492,17 @@ export default function Matches() {
 
                             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-zinc-800">
                                 {verifiedTeams.map((team) => (
-                                    <div
+                                    <TeamCard
                                         key={team._id}
+                                        team={team}
+                                        isSelected={selectedTeamIds.includes(team._id)}
                                         onClick={() => {
                                             setSelectedTeamIds(prev =>
                                                 prev.includes(team._id) ? prev.filter(id => id !== team._id) : [...prev, team._id]
                                             );
                                         }}
-                                        className={cn(
-                                            "p-5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all",
-                                            selectedTeamIds.includes(team._id)
-                                                ? "bg-yellow-500/10 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.1)]"
-                                                : "bg-zinc-950/50 border-zinc-800 hover:border-zinc-700"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className={cn(
-                                                "w-6 h-6 rounded-lg border flex items-center justify-center transition-all",
-                                                selectedTeamIds.includes(team._id) ? "bg-yellow-500 border-yellow-500" : "border-zinc-700"
-                                            )}>
-                                                {selectedTeamIds.includes(team._id) && <Trophy className="w-3 h-3 text-black" />}
-                                            </div>
-                                            <div>
-                                                <h5 className="font-bold text-white uppercase tracking-wider leading-none">{team.teamName}</h5>
-                                                <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mt-1">Leader: {team.leaderName}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Unit Group</span>
-                                            <p className="font-teko text-lg text-zinc-400 leading-none">{team.group || 'None'}</p>
-                                        </div>
-                                    </div>
+                                        className="p-4"
+                                    />
                                 ))}
                             </div>
 

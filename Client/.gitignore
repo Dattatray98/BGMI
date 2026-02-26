@@ -132,3 +132,8 @@ Desktop.ini
 .vscode
 *.swp
 *.swo
+
+# Local Development Files
+color-palette.txt
+lint_*.txt
+*.local

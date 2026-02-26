@@ -7,18 +7,13 @@ export const useAuthApi = () => {
     const { loading, error, request, clearError } = useAxios();
 
     const login = useCallback(async (credentials: any) => {
-        try {
-            const data = await request({
-                url: 'auth/login',
-                method: 'POST',
-                data: credentials
-            });
-            setAuth(data);
-            return data;
-        } catch (err: any) {
-            // Error is handled by useAxios and set in its error state
-            throw err;
-        }
+        const data = await request({
+            url: 'auth/login',
+            method: 'POST',
+            data: credentials
+        });
+        setAuth(data);
+        return data;
     }, [request, setAuth]);
 
     const logout = useCallback(() => {

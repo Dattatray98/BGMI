@@ -94,11 +94,11 @@ export default function UpdateScore() {
                 return {
                     ...team,
                     // If we are in a match, use match-specific scores. Otherwise, they start at 0 for a new match.
-                    totalKills: matchResult ? Number(matchResult.kills) : 0,
-                    placementPoints: matchResult ? Number(matchResult.placementPoints) : 0,
-                    totalPoints: matchResult ? (Number(matchResult.totalPoints) || (Number(matchResult.kills) + Number(matchResult.placementPoints))) : 0,
-                    wins: matchResult ? (matchResult.rank === 1 ? 1 : 0) : 0,
-                    alivePlayers: team.alivePlayers ?? 4
+                    totalKills: matchResult ? Number(matchResult.kills) : (matchId ? 0 : Number((team as any).totalKills || 0)),
+                    placementPoints: matchResult ? Number(matchResult.placementPoints) : (matchId ? 0 : Number((team as any).placementPoints || 0)),
+                    totalPoints: matchResult ? (Number(matchResult.totalPoints) || (Number(matchResult.kills) + Number(matchResult.placementPoints))) : (matchId ? 0 : Number((team as any).totalPoints || 0)),
+                    wins: matchResult ? (matchResult.rank === 1 ? 1 : 0) : (matchId ? 0 : Number((team as any).wins || 0)),
+                    alivePlayers: (team as any).alivePlayers ?? 4
                 };
             })
             .filter((team: Team) => {
@@ -407,11 +407,10 @@ export default function UpdateScore() {
                                             const currentVal = getValues(`teams.${currentIndex}.${fieldProp}` as any);
                                             const valToUse = currentVal !== undefined ? Number(currentVal) : (fieldProp === 'alivePlayers' ? 4 : 0);
 
-                                            let changeVal = isK ? 1 : Number(e.key);
+                                            const changeVal = isK ? 1 : Number(e.key);
                                             let newVal = adjustmentPendingRef.current.type === 'add' ? valToUse + changeVal : valToUse - changeVal;
 
-                                            if (fieldProp === 'alivePlayers') newVal = Math.max(0, Math.min(4, newVal));
-                                            else newVal = Math.max(0, newVal);
+                                            newVal = fieldProp === 'alivePlayers' ? Math.max(0, Math.min(4, newVal)) : Math.max(0, newVal);
 
                                             setValue(`teams.${currentIndex}.${fieldProp}` as any, newVal);
                                             adjustmentPendingRef.current = null;
