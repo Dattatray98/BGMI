@@ -63,6 +63,23 @@ export default function SeasonDetail() {
         loadData();
     }, [seasonId, fetchSeasonById, fetchMatches]);
 
+    const getDisplayStatus = (match: Match) => {
+        if (match.status === 'completed') return 'completed';
+        const matchTime = new Date(match.dateTime).getTime();
+        const currentTime = Date.now();
+        if (currentTime >= matchTime) return 'live';
+        return 'upcoming';
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'live': return 'MATCH STARTED';
+            case 'upcoming': return 'UPCOMING';
+            case 'completed': return 'COMPLETED';
+            default: return status;
+        }
+    };
+
     const filteredMatches = useMemo(() => {
         return matches.filter(m =>
             m.mapName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,14 +123,14 @@ export default function SeasonDetail() {
                                         className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-yellow-500 transition-colors flex items-center gap-2 mb-2 group"
                                     >
                                         <ChevronRight className="w-3 h-3 rotate-180" />
-                                        Back to Operations
+                                        Back to Home
                                     </button>
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
                                             "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em]",
                                             season.status === 'active' ? "bg-red-500 text-white" : "bg-zinc-800 text-zinc-500"
                                         )}>
-                                            {season.status === 'active' ? "Active Operation" : "Archived Sector"}
+                                            {season.status === 'active' ? "Active Seasons" : "Archived Seasons"}
                                         </div>
                                         <span className="text-zinc-500 font-teko text-2xl uppercase tracking-[0.3em]">{season.gameName || "BGMI"}</span>
                                     </div>
@@ -140,7 +157,7 @@ export default function SeasonDetail() {
                 </section>
 
                 {/* Tabs / Navigation */}
-                <div className="sticky top-16 z-40 bg-black/80 backdrop-blur-md border-b border-zinc-900">
+                <div className="sticky top-13 z-40 bg-black/80 backdrop-blur-md border-b border-zinc-900">
                     <div className="section-container py-0">
                         <div className="flex gap-12">
                             {(['overview', 'matches'] as const).map((tab) => (
@@ -184,7 +201,7 @@ export default function SeasonDetail() {
                                             <Calendar className="w-6 h-6 text-yellow-500" />
                                         </div>
                                         <div>
-                                            <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Deployment Date</h4>
+                                            <h4 className="text-[12px] font-black text-zinc-500 uppercase tracking-widest mb-1">Season Starting Date</h4>
                                             <p className="text-3xl font-teko font-bold text-white uppercase tracking-wider">
                                                 {new Date(season.startDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
                                             </p>
@@ -195,7 +212,7 @@ export default function SeasonDetail() {
                                             <Users className="w-6 h-6 text-blue-500" />
                                         </div>
                                         <div>
-                                            <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Squad Deployment</h4>
+                                            <h4 className="text-[12px] font-black text-zinc-500 uppercase tracking-widest mb-1">Squads</h4>
                                             <p className="text-3xl font-teko font-bold text-white uppercase tracking-wider">
                                                 {season.finalTeamCount || 20}+ Registered Teams
                                             </p>
@@ -206,9 +223,9 @@ export default function SeasonDetail() {
                                             <Gamepad2 className="w-6 h-6 text-green-500" />
                                         </div>
                                         <div>
-                                            <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Prize Manifest</h4>
+                                            <h4 className="text-[12px] font-black text-zinc-500 uppercase tracking-widest mb-1">Prize pool</h4>
                                             <p className="text-3xl font-teko font-bold text-white uppercase tracking-wider">
-                                                {season.prizePool || "TBA"}
+                                                ₹ {season.prizePool || "TBA"}
                                             </p>
                                         </div>
                                     </div>
@@ -223,16 +240,22 @@ export default function SeasonDetail() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                                         <div className="space-y-2">
-                                            <span className="text-5xl font-teko font-black text-white">{matches.length}</span>
-                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Completed Operations</p>
+                                            <span className="text-5xl font-teko font-black text-white">
+                                                {matches.filter(m => m.status === 'completed').length}
+                                            </span>
+                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Completed Matches</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <span className="text-5xl font-teko font-black text-white">{matches.filter(m => m.status === 'completed').length}</span>
-                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Verified Results</p>
+                                            <span className="text-5xl font-teko font-black text-white">
+                                                {matches.filter(m => getDisplayStatus(m) === 'upcoming').length}
+                                            </span>
+                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Upcoming Matches</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <span className="text-5xl font-teko font-black text-white">{matches.length > 0 ? [...new Set(matches.map(m => m.mapName))].length : 0}</span>
-                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Tactical Terrains</p>
+                                            <span className="text-5xl font-teko font-black text-white">
+                                                {matches.filter(m => m.status !== 'completed' && getDisplayStatus(m) === 'live').length}
+                                            </span>
+                                            <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">Started Matches</p>
                                         </div>
                                         <div className="space-y-2">
                                             <span className="text-5xl font-teko font-black text-yellow-500">{season.status}</span>
@@ -284,11 +307,11 @@ export default function SeasonDetail() {
                                                     <div className="flex justify-between items-start mb-6">
                                                         <div className={cn(
                                                             "px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest",
-                                                            match.status === 'completed' ? "bg-green-500/10 text-green-500" :
-                                                                match.status === 'live' ? "bg-red-500 text-white animate-pulse" :
+                                                            getDisplayStatus(match) === 'live' ? "bg-red-500 text-white animate-pulse" :
+                                                                getDisplayStatus(match) === 'completed' ? "bg-green-500/10 text-green-500" :
                                                                     "bg-zinc-800 text-zinc-500"
                                                         )}>
-                                                            {match.status}
+                                                            {getStatusLabel(getDisplayStatus(match))}
                                                         </div>
                                                         <span className="text-zinc-600 font-teko font-bold text-xl group-hover:text-yellow-500 transition-colors">#{match.matchNumber}</span>
                                                     </div>

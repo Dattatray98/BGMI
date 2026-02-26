@@ -199,6 +199,23 @@ export default function Matches() {
         }
     };
 
+    const getDisplayStatus = (match: Match) => {
+        if (match.status === 'completed') return 'completed';
+        const matchTime = new Date(match.dateTime).getTime();
+        const currentTime = Date.now();
+        if (currentTime >= matchTime) return 'live';
+        return 'upcoming';
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'live': return 'MATCH STARTED';
+            case 'upcoming': return 'UPCOMING';
+            case 'completed': return 'COMPLETED';
+            default: return status;
+        }
+    };
+
     return (
         <div className="bg-black min-h-screen text-gray-100 font-rajdhani selection:bg-yellow-500 selection:text-black">
             <Navbar />
@@ -275,11 +292,11 @@ export default function Matches() {
                                 <div className="flex justify-between items-start mb-2">
                                     <div className={cn(
                                         "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                                        match.status === 'live' ? "bg-red-500 text-white animate-pulse" :
-                                            match.status === 'completed' ? "bg-green-500/20 text-green-500" :
+                                        getDisplayStatus(match) === 'live' ? "bg-red-500 text-white animate-pulse" :
+                                            getDisplayStatus(match) === 'completed' ? "bg-green-500/20 text-green-500" :
                                                 "bg-zinc-800 text-zinc-500"
                                     )}>
-                                        {match.status}
+                                        {getStatusLabel(getDisplayStatus(match))}
                                     </div>
                                     <span className="text-zinc-600 font-teko text-lg group-hover:text-yellow-500/50 transition-colors">#{match.matchNumber}</span>
                                 </div>
@@ -373,9 +390,9 @@ export default function Matches() {
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
                                                 "w-4 h-4 rounded-full animate-pulse",
-                                                selectedMatch.status === 'live' ? "bg-red-500" : selectedMatch.status === 'completed' ? "bg-green-500" : "bg-zinc-500"
+                                                getDisplayStatus(selectedMatch) === 'live' ? "bg-red-500" : getDisplayStatus(selectedMatch) === 'completed' ? "bg-green-500" : "bg-zinc-500"
                                             )} />
-                                            <span className="text-3xl font-teko font-bold text-white uppercase tracking-wider">{selectedMatch.status}</span>
+                                            <span className="text-3xl font-teko font-bold text-white uppercase tracking-wider">{getStatusLabel(getDisplayStatus(selectedMatch))}</span>
                                         </div>
                                     </div>
                                     <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-3xl p-6 space-y-4">
