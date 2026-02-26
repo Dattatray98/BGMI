@@ -18,6 +18,7 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("@/pages/TermsConditions"));
 const ObsOverlay = lazy(() => import("@/pages/ObsOverlay"));
 const Matches = lazy(() => import("@/pages/Matches"));
+const SeasonDetail = lazy(() => import("@/pages/SeasonDetail"));
 
 // Tactical Loading Fallback
 const PageLoader = () => (
@@ -42,6 +43,7 @@ function App() {
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/overlay/:seasonId?" element={<ObsOverlay />} />
               <Route path="/matches" element={<Matches />} />
+              <Route path="/seasons/:seasonId" element={<SeasonDetail />} />
 
               {/* Admin Only Routes */}
               <Route element={<ProtectedRoute allowedRoles={['admin']} />}>

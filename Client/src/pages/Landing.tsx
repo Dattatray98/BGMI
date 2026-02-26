@@ -6,6 +6,7 @@ import Rules from "@/components/sections/Rules";
 import Prizes from "@/components/sections/Prizes";
 import Venue from "@/components/sections/Venue";
 import FAQ from "@/components/sections/FAQ";
+import SeasonsList from "@/components/sections/SeasonsList";
 import Footer from "@/components/layout/Footer";
 
 export default function Landing() {
@@ -20,6 +21,10 @@ export default function Landing() {
 
                 <div className="relative z-20 -mt-20 px-4">
                     <EventInfo />
+                </div>
+
+                <div>
+                    <SeasonsList />
                 </div>
 
                 <div id="schedule">

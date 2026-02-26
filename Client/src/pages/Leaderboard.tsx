@@ -77,7 +77,7 @@ export default function Leaderboard() {
     const seasonIdFromUrl = searchParams.get('seasonId');
     const [seasons, setSeasons] = useState<any[]>([]);
     const [isSeasonDropdownOpen, setIsSeasonDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'global' | 'group1' | 'group2'>('global');
+
     const [isSplitView, setIsSplitView] = useState(false);
     const [currentMatch, setCurrentMatch] = useState<any>(null);
     const [matchLoading, setMatchLoading] = useState(false);
@@ -219,10 +219,8 @@ export default function Leaderboard() {
             dataToUse = LEADERBOARD_DATA;
         }
 
-        if (activeTab === 'global') return dataToUse;
-        const groupName = activeTab === 'group1' ? 'Group-1' : 'Group-2';
-        return dataToUse.filter(t => t.group === groupName);
-    }, [verifiedTeams, activeTab, currentSeasonId, currentMatch]);
+        return dataToUse;
+    }, [verifiedTeams, currentSeasonId, currentMatch]);
 
     const teamColumns = useMemo(() => {
         if (!isSplitView) return [displayedTeams];
@@ -370,29 +368,9 @@ export default function Leaderboard() {
                                     </AnimatePresence>
                                 </div>
 
-                                <div className="w-px h-8 bg-zinc-800 hidden md:block" />
-
-                                {/* Group Filters */}
-                                <div className="flex items-center gap-6">
-                                    {(['global', 'group1', 'group2'] as const).map((tab) => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => setActiveTab(tab)}
-                                            className={cn(
-                                                "text-[12px] font-black uppercase tracking-[0.2em] transition-all relative group cursor-pointer bg-transparent border-none p-0 whitespace-nowrap",
-                                                activeTab === tab ? "text-yellow-500" : "text-zinc-500 hover:text-yellow-500"
-                                            )}
-                                        >
-                                            {tab === 'global' ? 'Global' : tab === 'group1' ? 'Group-1' : 'Group-2'}
-                                            <span className={cn(
-                                                "absolute -bottom-1 left-0 h-0.5 bg-yellow-500 transition-all duration-300",
-                                                activeTab === tab ? "w-full" : "w-0 group-hover:w-full"
-                                            )} />
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="w-px h-4 bg-zinc-800 hidden md:block" />
+                                {user?.role === 'admin' && filteredLinks.length > 0 && (
+                                    <div className="w-px h-8 bg-zinc-800 hidden md:block" />
+                                )}
 
                                 {/* Admin Links */}
                                 {user?.role === 'admin' && filteredLinks.map((link) => (

@@ -5,8 +5,6 @@
   -ms-overflow-style: none;
   /* For Firefox */
   scrollbar-width: none;
-  /* Ensure content can still scroll if it overflows */
-  overflow-y: scroll; 
 }
 
 /* For Chrome, Safari, and Opera */

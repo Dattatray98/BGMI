@@ -6,7 +6,7 @@ export const TOURNAMENT_INFO = {
     date: "FEBRUARY 28, 2026",
     location: "IIC-SIT, LONAVALA",
     prizePool: "₹ 5,000",
-    totalTeams: 25,
+    totalTeams: 19,
     mode: "TPP / SQUAD",
     mapRotation: ["RONDO START", "ERANGEL", "MIRAMAR", "ERANGEL", "MIRAMAR", "ERANGEL"],
     reportingTime: "09:00 AM",
