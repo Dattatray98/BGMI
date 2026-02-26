@@ -16,9 +16,9 @@ export default function ObsOverlay() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Notification State
-    const [activeNotification, setActiveNotification] = React.useState<{ message: string; submessage?: string } | null>(null);
+    const [activeNotification, setActiveNotification] = React.useState<{ message: string; rank?: number; submessage?: string } | null>(null);
     const [isBarVisible, setIsBarVisible] = React.useState(false);
-    const notificationQueue = useRef<string[]>([]);
+    const notificationQueue = useRef<{ message: string; rank?: number }[]>([]);
     const isProcessingQueue = useRef(false);
     const prevTeamsRef = useRef<any[]>([]);
 
@@ -137,8 +137,8 @@ export default function ObsOverlay() {
         if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
 
         isProcessingQueue.current = true;
-        const msg = notificationQueue.current.shift();
-        setActiveNotification({ message: msg || "" });
+        const msgObj = notificationQueue.current.shift();
+        setActiveNotification(msgObj || null);
         setIsBarVisible(true);
 
         setTimeout(() => {
@@ -151,8 +151,8 @@ export default function ObsOverlay() {
         }, 5000); // visible duration
     }, []);
 
-    const addNotification = React.useCallback((msg: string) => {
-        notificationQueue.current.push(msg);
+    const addNotification = React.useCallback((message: string, rank?: number) => {
+        notificationQueue.current.push({ message, rank });
         processQueue();
     }, [processQueue]);
 
@@ -161,21 +161,35 @@ export default function ObsOverlay() {
         if (displayTeams.length === 0) return;
 
         if (prevTeamsRef.current.length > 0) {
-            displayTeams.forEach((team: any) => {
+            displayTeams.forEach((team: any, index: number) => {
                 const prevTeam = prevTeamsRef.current.find((t: any) => String(t._id || t.teamName) === String(team._id || team.teamName));
+                const currentRank = index + 1;
+
                 if (prevTeam) {
                     // 1. Kills Update
                     if (team.totalKills > prevTeam.totalKills) {
                         const diff = team.totalKills - prevTeam.totalKills;
-                        addNotification(`${team.teamName.toUpperCase()} SECURED ${diff} ELIMINATION${diff > 1 ? 'S' : ''}!`);
+                        addNotification(`${team.teamName.toUpperCase()} SECURED ${diff} ELIMINATION${diff > 1 ? 'S' : ''}!`, currentRank);
                     }
-                    // 2. Points Update
+                    // 2. Points Update (Placement change or similar without kill change)
                     if (team.totalPoints > prevTeam.totalPoints && team.totalKills === prevTeam.totalKills) {
-                        addNotification(`${team.teamName.toUpperCase()} EARNED PLACEMENT POINTS!`);
+                        addNotification(`${team.teamName.toUpperCase()} EARNED PLACEMENT POINTS!`, currentRank);
                     }
-                    // 3. Team Wipe
-                    if ((prevTeam.alivePlayers ?? 4) > 0 && team.alivePlayers === 0) {
-                        addNotification(`${team.teamName.toUpperCase()} HAS BEEN WIPED OUT!`);
+                    // 3. Survival Status Changes
+                    const prevAlive = prevTeam.alivePlayers ?? 4;
+                    const currAlive = team.alivePlayers ?? 4;
+
+                    if (prevAlive > 0 && currAlive === 0) {
+                        // Team Wipe
+                        addNotification(`${team.teamName.toUpperCase()} HAS BEEN WIPED OUT!`, currentRank);
+                    } else if (currAlive < prevAlive && currAlive > 0) {
+                        // Player Lost
+                        const diff = prevAlive - currAlive;
+                        addNotification(`${team.teamName.toUpperCase()} LOST ${diff} PLAYER${diff > 1 ? 'S' : ''}!`, currentRank);
+                    } else if (currAlive > prevAlive) {
+                        // Player Recalled/Revived
+                        const diff = currAlive - prevAlive;
+                        addNotification(`${team.teamName.toUpperCase()} REINFORCED: ${diff} PLAYER${diff > 1 ? 'S' : ''} BACK!`, currentRank);
                     }
                 }
             });
@@ -317,6 +331,11 @@ export default function ObsOverlay() {
                                 <div className="flex items-center gap-4">
                                     <div className="h-[2px] w-12 bg-yellow-500" />
                                     <span className="text-xs font-black text-yellow-500 uppercase tracking-[0.5em]">OPERATIONAL UPDATE</span>
+                                    {activeNotification.rank && (
+                                        <div className="bg-yellow-500 text-black px-2 py-0.5 rounded-sm font-black text-[10px] tracking-tighter">
+                                            RANK #{activeNotification.rank}
+                                        </div>
+                                    )}
                                     <div className="h-[2px] flex-1 bg-yellow-500/20" />
                                 </div>
                                 <motion.h2

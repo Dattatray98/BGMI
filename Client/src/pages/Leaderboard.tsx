@@ -81,6 +81,44 @@ export default function Leaderboard() {
     const [isSplitView, setIsSplitView] = useState(false);
     const [currentMatch, setCurrentMatch] = useState<any>(null);
     const [matchLoading, setMatchLoading] = useState(false);
+    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
+
+    const isPublicMatchView = !!(matchId && (!user || user.role !== 'admin'));
+
+    // Countdown Logic
+    useEffect(() => {
+        if (!currentMatch || currentMatch.status !== 'upcoming' || !currentMatch.dateTime) {
+            setTimeLeft(null);
+            return;
+        }
+
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const target = new Date(currentMatch.dateTime).getTime();
+            const diff = target - now;
+
+            if (diff <= 0) {
+                setTimeLeft(null);
+                clearInterval(timer);
+                refreshTeams(); // Trigger refresh to get new status
+                return;
+            }
+
+            setTimeLeft({
+                d: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                h: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+                s: Math.floor((diff % (1000 * 60)) / 1000)
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [currentMatch, refreshTeams]);
+
+    // Auto-set split view for public match
+    useEffect(() => {
+        if (isPublicMatchView) setIsSplitView(true);
+    }, [isPublicMatchView]);
 
     // Fetch match data if matchId is present
     useEffect(() => {
@@ -102,7 +140,20 @@ export default function Leaderboard() {
                 setMatchLoading(false);
             }
         };
+
         fetchMatchData();
+
+        // Polling for match status if upcoming (every 10s)
+        let interval: any;
+        if (matchId) {
+            interval = setInterval(() => {
+                fetchMatchData();
+            }, 10000);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [matchId, setSeasonId, currentSeasonId]);
 
     // Derived filtered seasons: All active + Last one completed
@@ -238,186 +289,207 @@ export default function Leaderboard() {
 
                 <ScrollReveal>
                     <div className="text-center mb-5 relative">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                            <span className="relative flex h-3 w-3">
+                        {!isPublicMatchView && (
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                                <span className="relative flex h-3 w-3">
+                                    <span className={cn(
+                                        "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                                        currentMatch ? (currentMatch.status === 'live' ? "bg-red-400" : "bg-green-400") : "bg-red-400"
+                                    )}></span>
+                                    <span className={cn(
+                                        "relative inline-flex rounded-full h-3 w-3",
+                                        currentMatch ? (currentMatch.status === 'live' ? "bg-red-500" : "bg-green-500") : "bg-red-500"
+                                    )}></span>
+                                </span>
                                 <span className={cn(
-                                    "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                                    currentMatch ? (currentMatch.status === 'live' ? "bg-red-400" : "bg-green-400") : "bg-red-400"
-                                )}></span>
-                                <span className={cn(
-                                    "relative inline-flex rounded-full h-3 w-3",
-                                    currentMatch ? (currentMatch.status === 'live' ? "bg-red-500" : "bg-green-500") : "bg-red-500"
-                                )}></span>
-                            </span>
-                            <span className={cn(
-                                "font-bold text-xs tracking-[0.3em] uppercase",
-                                currentMatch ? (currentMatch.status === 'live' ? "text-red-500" : "text-green-500") : "text-red-500"
-                            )}>
-                                {currentMatch ? `${currentMatch.status} Stats` : "Live Season Standings"}
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 tracking-tighter drop-shadow-2xl uppercase">
+                                    "font-bold text-xs tracking-[0.3em] uppercase",
+                                    currentMatch ? (currentMatch.status === 'live' ? "text-red-500" : "text-green-500") : "text-red-500"
+                                )}>
+                                    {currentMatch ? `${currentMatch.status} Stats` : "Live Season Standings"}
+                                </span>
+                            </div>
+                        )}
+                        <h1 className="text-4xl md:text-5xl font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 tracking-tighter drop-shadow-2xl uppercase mb-2">
                             {currentMatch ? (
                                 <>Match #{currentMatch.matchNumber} <span className="text-yellow-500">{currentMatch.mapName}</span></>
                             ) : (
                                 <>Tournament <span className="text-yellow-500">Standings</span></>
                             )}
                         </h1>
-                        {currentMatch?.status === 'upcoming' && (
+
+                        {currentMatch && (currentMatch.roomId || currentMatch.password) && (
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                {currentMatch.roomId && (
+                                    <div className="bg-zinc-900 border border-zinc-800 px-4 py-1 rounded-lg flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Room ID:</span>
+                                        <span className="font-teko text-xl font-bold text-yellow-500 tracking-wider">{currentMatch.roomId}</span>
+                                    </div>
+                                )}
+                                {currentMatch.password && (
+                                    <div className="bg-zinc-900 border border-zinc-800 px-4 py-1 rounded-lg flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Pass:</span>
+                                        <span className="font-teko text-xl font-bold text-yellow-500 tracking-wider">{currentMatch.password}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {!isPublicMatchView && currentMatch?.status === 'upcoming' && (
                             <p className="text-zinc-500 font-teko text-xl uppercase tracking-widest mt-2">Player Roster (Match Pending)</p>
                         )}
                     </div>
                 </ScrollReveal>
 
                 {/* Unified Control Bar */}
-                <div className="relative z-50 mb-6">
-                    <ScrollReveal delay={0.1}>
-                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 p-2 border-b border-zinc-800 rounded-sm backdrop-blur-sm shadow-2xl relative z-40">
+                {!isPublicMatchView && (
+                    <div className="relative z-50 mb-6">
+                        <ScrollReveal delay={0.1}>
+                            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 p-2 border-b border-zinc-800 rounded-sm backdrop-blur-sm shadow-2xl relative z-40">
 
-                            {/* Left Side: Season Selection Dropdown & Group Filters */}
-                            <div className="flex flex-1 flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-4 px-4 py-2 md:py-0">
+                                {/* Left Side: Season Selection Dropdown & Group Filters */}
+                                <div className="flex flex-1 flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-4 px-4 py-2 md:py-0">
 
-                                {/* Season Dropdown */}
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setIsSeasonDropdownOpen(!isSeasonDropdownOpen)}
-                                        className={cn(
-                                            "flex items-center gap-3 px-4 py-2 bg-zinc-900/50 border rounded-xl transition-all group relative z-50",
-                                            isSeasonDropdownOpen ? "border-yellow-500 bg-zinc-800" : "border-zinc-800 hover:border-yellow-500/50"
-                                        )}
-                                    >
-                                        <div className="flex flex-col items-start leading-none gap-1">
-                                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-yellow-500 transition-colors">Current Operation</span>
-                                            <span className="text-sm font-teko font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                                                {selectedSeason?.title || "Initializing..."}
-                                                {selectedSeason?.status === 'active' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                                            </span>
-                                        </div>
-                                        <ChevronDown className={cn("w-4 h-4 text-zinc-500 transition-transform duration-500", isSeasonDropdownOpen ? "rotate-180 text-yellow-500" : "")} />
-                                    </button>
-
-                                    <AnimatePresence>
-                                        {isSeasonDropdownOpen && (
-                                            <div className="absolute top-full left-0 z-50">
-                                                <motion.div
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[-1]"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setIsSeasonDropdownOpen(false);
-                                                    }}
-                                                />
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(10px)' }}
-                                                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                                                    exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(10px)' }}
-                                                    className="mt-3 w-72 md:w-80 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden ring-1 ring-white/10"
-                                                >
-                                                    <div className="p-2 space-y-1">
-                                                        <div className="px-3 py-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-zinc-800/50 mb-1 flex justify-between items-center">
-                                                            <span>Available Operations</span>
-                                                            <span className="bg-zinc-800 px-1.5 py-0.5 rounded text-[8px]">{filteredSeasons.length}</span>
-                                                        </div>
-                                                        {filteredSeasons.map((season) => (
-                                                            <button
-                                                                key={season._id}
-                                                                onClick={() => {
-                                                                    setSeasonId(season._id);
-                                                                    setIsSeasonDropdownOpen(false);
-                                                                }}
-                                                                className={cn(
-                                                                    "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all group/item",
-                                                                    currentSeasonId === season._id
-                                                                        ? "bg-yellow-500 text-black shadow-lg"
-                                                                        : "hover:bg-zinc-800 text-zinc-400"
-                                                                )}
-                                                            >
-                                                                <div className="flex items-center gap-3 overflow-hidden text-left">
-                                                                    <div className={cn(
-                                                                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                                                        currentSeasonId === season._id ? "bg-black/20" : "bg-zinc-950 border border-zinc-800"
-                                                                    )}>
-                                                                        {season.status === 'active' ? <Calendar className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-                                                                    </div>
-                                                                    <div className="overflow-hidden">
-                                                                        <div className={cn("text-sm font-bold uppercase tracking-tight truncate", currentSeasonId === season._id ? "text-black" : "text-white")}>
-                                                                            {season.title}
-                                                                        </div>
-                                                                        <div className={cn("text-[9px] font-black uppercase tracking-widest flex items-center gap-1", currentSeasonId === season._id ? "text-black/60" : "text-zinc-500")}>
-                                                                            {season.status === 'active' ? (
-                                                                                <>
-                                                                                    <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                                                                                    Live Standings
-                                                                                </>
-                                                                            ) : 'Archived Results'}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                {currentSeasonId === season._id && <ShieldCheck className="w-4 h-4 shrink-0" />}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="bg-zinc-950/50 p-2 border-t border-zinc-800/50">
-                                                        <p className="text-[8px] text-zinc-600 text-center uppercase font-black tracking-widest">End-to-End Encrypted Standings</p>
-                                                    </div>
-                                                </motion.div>
+                                    {/* Season Dropdown */}
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setIsSeasonDropdownOpen(!isSeasonDropdownOpen)}
+                                            className={cn(
+                                                "flex items-center gap-3 px-4 py-2 bg-zinc-900/50 border rounded-xl transition-all group relative z-50",
+                                                isSeasonDropdownOpen ? "border-yellow-500 bg-zinc-800" : "border-zinc-800 hover:border-yellow-500/50"
+                                            )}
+                                        >
+                                            <div className="flex flex-col items-start leading-none gap-1">
+                                                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-yellow-500 transition-colors">Current Operation</span>
+                                                <span className="text-sm font-teko font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                                    {selectedSeason?.title || "Initializing..."}
+                                                    {selectedSeason?.status === 'active' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                                                </span>
                                             </div>
-                                        )}
-                                    </AnimatePresence>
+                                            <ChevronDown className={cn("w-4 h-4 text-zinc-500 transition-transform duration-500", isSeasonDropdownOpen ? "rotate-180 text-yellow-500" : "")} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {isSeasonDropdownOpen && (
+                                                <div className="absolute top-full left-0 z-50">
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[-1]"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setIsSeasonDropdownOpen(false);
+                                                        }}
+                                                    />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(10px)' }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                                                        exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(10px)' }}
+                                                        className="mt-3 w-72 md:w-80 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden ring-1 ring-white/10"
+                                                    >
+                                                        <div className="p-2 space-y-1">
+                                                            <div className="px-3 py-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-zinc-800/50 mb-1 flex justify-between items-center">
+                                                                <span>Available Operations</span>
+                                                                <span className="bg-zinc-800 px-1.5 py-0.5 rounded text-[8px]">{filteredSeasons.length}</span>
+                                                            </div>
+                                                            {filteredSeasons.map((season) => (
+                                                                <button
+                                                                    key={season._id}
+                                                                    onClick={() => {
+                                                                        setSeasonId(season._id);
+                                                                        setIsSeasonDropdownOpen(false);
+                                                                    }}
+                                                                    className={cn(
+                                                                        "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all group/item",
+                                                                        currentSeasonId === season._id
+                                                                            ? "bg-yellow-500 text-black shadow-lg"
+                                                                            : "hover:bg-zinc-800 text-zinc-400"
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center gap-3 overflow-hidden text-left">
+                                                                        <div className={cn(
+                                                                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                                                            currentSeasonId === season._id ? "bg-black/20" : "bg-zinc-950 border border-zinc-800"
+                                                                        )}>
+                                                                            {season.status === 'active' ? <Calendar className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                                                                        </div>
+                                                                        <div className="overflow-hidden">
+                                                                            <div className={cn("text-sm font-bold uppercase tracking-tight truncate", currentSeasonId === season._id ? "text-black" : "text-white")}>
+                                                                                {season.title}
+                                                                            </div>
+                                                                            <div className={cn("text-[9px] font-black uppercase tracking-widest flex items-center gap-1", currentSeasonId === season._id ? "text-black/60" : "text-zinc-500")}>
+                                                                                {season.status === 'active' ? (
+                                                                                    <>
+                                                                                        <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                                                                                        Live Standings
+                                                                                    </>
+                                                                                ) : 'Archived Results'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    {currentSeasonId === season._id && <ShieldCheck className="w-4 h-4 shrink-0" />}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        <div className="bg-zinc-950/50 p-2 border-t border-zinc-800/50">
+                                                            <p className="text-[8px] text-zinc-600 text-center uppercase font-black tracking-widest">End-to-End Encrypted Standings</p>
+                                                        </div>
+                                                    </motion.div>
+                                                </div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {user?.role === 'admin' && filteredLinks.length > 0 && (
+                                        <div className="w-px h-8 bg-zinc-800 hidden md:block" />
+                                    )}
+
+                                    {/* Admin Links */}
+                                    {user?.role === 'admin' && filteredLinks.map((link) => (
+                                        <button
+                                            key={link.name}
+                                            onClick={() => handleNavigation(link.href, link.type)}
+                                            className={cn(
+                                                "text-[12px] font-black uppercase tracking-[0.2em] transition-colors relative group cursor-pointer bg-transparent border-none p-0 whitespace-nowrap",
+                                                location.pathname === link.href ? "text-yellow-500" : "text-zinc-500 hover:text-yellow-500"
+                                            )}
+                                        >
+                                            {link.name}
+                                            <span className={cn(
+                                                "absolute -bottom-1 left-0 h-0.5 bg-yellow-500 transition-all duration-300",
+                                                location.pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
+                                            )} />
+                                        </button>
+                                    ))}
                                 </div>
 
-                                {user?.role === 'admin' && filteredLinks.length > 0 && (
-                                    <div className="w-px h-8 bg-zinc-800 hidden md:block" />
-                                )}
-
-                                {/* Admin Links */}
-                                {user?.role === 'admin' && filteredLinks.map((link) => (
+                                {/* Right Side: Actions & View Toggle */}
+                                <div className="flex items-center justify-center md:justify-end gap-3 px-1 border-t md:border-t-0 md:border-l border-zinc-800/50 pt-3 md:pt-0 pl-0 md:pl-4">
+                                    {/* Layout Toggle */}
                                     <button
-                                        key={link.name}
-                                        onClick={() => handleNavigation(link.href, link.type)}
-                                        className={cn(
-                                            "text-[12px] font-black uppercase tracking-[0.2em] transition-colors relative group cursor-pointer bg-transparent border-none p-0 whitespace-nowrap",
-                                            location.pathname === link.href ? "text-yellow-500" : "text-zinc-500 hover:text-yellow-500"
-                                        )}
+                                        onClick={() => setIsSplitView(!isSplitView)}
+                                        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-yellow-500 hover:border-yellow-500/50 transition-all cursor-pointer font-teko tracking-widest uppercase text-sm"
+                                        title={isSplitView ? "Switch to List View" : "Switch to Split View"}
                                     >
-                                        {link.name}
-                                        <span className={cn(
-                                            "absolute -bottom-1 left-0 h-0.5 bg-yellow-500 transition-all duration-300",
-                                            location.pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
-                                        )} />
+                                        {isSplitView ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+                                        <span className="hidden xl:inline">{isSplitView ? "Single Column" : "Split View"}</span>
                                     </button>
-                                ))}
-                            </div>
 
-                            {/* Right Side: Actions & View Toggle */}
-                            <div className="flex items-center justify-center md:justify-end gap-3 px-1 border-t md:border-t-0 md:border-l border-zinc-800/50 pt-3 md:pt-0 pl-0 md:pl-4">
-                                {/* Layout Toggle */}
-                                <button
-                                    onClick={() => setIsSplitView(!isSplitView)}
-                                    className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-yellow-500 hover:border-yellow-500/50 transition-all cursor-pointer font-teko tracking-widest uppercase text-sm"
-                                    title={isSplitView ? "Switch to List View" : "Switch to Split View"}
-                                >
-                                    {isSplitView ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
-                                    <span className="hidden xl:inline">{isSplitView ? "Single Column" : "Split View"}</span>
-                                </button>
-
-                                <button
-                                    onClick={() => refreshTeams()}
-                                    disabled={loading}
-                                    className={cn(
-                                        "flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-yellow-500 hover:border-yellow-500/50 transition-all cursor-pointer group/refresh",
-                                        loading && "opacity-50 cursor-not-allowed"
-                                    )}
-                                    title="Refresh Standings"
-                                >
-                                    <RefreshCw className={cn("w-4 h-4 group-hover/refresh:rotate-180 transition-transform duration-500", loading && "animate-spin")} />
-                                </button>
+                                    <button
+                                        onClick={() => refreshTeams()}
+                                        disabled={loading}
+                                        className={cn(
+                                            "flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-yellow-500 hover:border-yellow-500/50 transition-all cursor-pointer group/refresh",
+                                            loading && "opacity-50 cursor-not-allowed"
+                                        )}
+                                        title="Refresh Standings"
+                                    >
+                                        <RefreshCw className={cn("w-4 h-4 group-hover/refresh:rotate-180 transition-transform duration-500", loading && "animate-spin")} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </ScrollReveal>
-                </div>
+                        </ScrollReveal>
+                    </div>
+                )}
 
                 <ScrollReveal delay={0.2}>
                     {(loading || matchLoading) ? (
@@ -430,6 +502,71 @@ export default function Leaderboard() {
                             <p className="text-zinc-500 font-teko text-xl tracking-widest animate-pulse uppercase">
                                 {matchLoading ? "Deploying Match Intel..." : "Updating Leaderboard..."}
                             </p>
+                        </div>
+                    ) : (isPublicMatchView && currentMatch?.status === 'upcoming' && timeLeft) ? (
+                        /* Pre-Match Intel Screen for Public View */
+                        <div className="flex flex-col items-center justify-center py-12 md:py-20 bg-zinc-900/10 border border-zinc-800/50 rounded-[40px] backdrop-blur-md relative overflow-hidden shadow-2xl">
+                            {/* Tactical Background Elements */}
+                            <div className="absolute inset-0 pointer-events-none">
+                                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.03)_0%,transparent_70%)]" />
+                                <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+                                <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+                            </div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative z-10 flex flex-col items-center text-center"
+                            >
+                                <div className="mb-6">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-4">
+                                        <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                                        <span className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em]">Operational Readiness Status: PRE-MATCH</span>
+                                    </div>
+                                    <h2 className="text-6xl md:text-8xl font-teko font-black text-white tracking-tighter uppercase leading-none italic">
+                                        GENESIS <span className="text-yellow-500">ESPORT</span>
+                                    </h2>
+                                    <p className="text-zinc-500 font-teko text-xl md:text-2xl uppercase tracking-[0.4em] mt-2">The Beginning of a New Legend</p>
+                                </div>
+
+                                {/* Countdown Grill */}
+                                <div className="grid grid-cols-4 gap-4 md:gap-8 mb-12">
+                                    {[
+                                        { label: 'Days', value: timeLeft.d },
+                                        { label: 'Hours', value: timeLeft.h },
+                                        { label: 'Mins', value: timeLeft.m },
+                                        { label: 'Secs', value: timeLeft.s }
+                                    ].map((unit) => (
+                                        <div key={unit.label} className="flex flex-col items-center">
+                                            <div className="w-16 h-20 md:w-24 md:h-28 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <span className="text-4xl md:text-6xl font-teko font-black text-white z-10">
+                                                    {String(unit.value).padStart(2, '0')}
+                                                </span>
+                                                <div className="absolute bottom-1 w-8 h-[2px] bg-yellow-500/30" />
+                                            </div>
+                                            <span className="mt-3 text-[10px] font-black text-zinc-600 uppercase tracking-widest">{unit.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Match Intel Card */}
+                                <div className="max-w-md w-full p-6 bg-zinc-900/50 border border-zinc-800 rounded-3xl backdrop-blur-sm">
+                                    <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-4">
+                                        <div className="text-left">
+                                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Current Sector</p>
+                                            <p className="font-teko text-xl text-white uppercase">{currentMatch.mapName || "ERANGEL"}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Deployment</p>
+                                            <p className="font-teko text-xl text-yellow-500 uppercase">MATCH #{currentMatch.matchNumber}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 font-medium leading-relaxed uppercase tracking-wider">
+                                        System initialized for {selectedSeason?.title}. All teams confirmed for deployment. Standings will activate automatically on match commencement.
+                                    </p>
+                                </div>
+                            </motion.div>
                         </div>
                     ) : displayedTeams.length > 0 ? (
                         <div className={cn(
