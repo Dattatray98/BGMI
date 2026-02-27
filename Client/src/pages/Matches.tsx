@@ -642,8 +642,7 @@ export default function Matches() {
                                             <option value="MIRAMAR">MIRAMAR</option>
                                             <option value="SANHOK">SANHOK</option>
                                             <option value="VIKENDI">VIKENDI</option>
-                                            <option value="LIVIK">LIVIK</option>
-                                            <option value="KARAKIN">KARAKIN</option>
+                                            <option value="RONDO">RONDO</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">

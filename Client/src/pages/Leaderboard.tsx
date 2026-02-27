@@ -38,14 +38,12 @@ const TeamRow = ({ team, rankToDisplay, isTop3 }: { team: Team, rankToDisplay: n
         <div className="flex justify-center">
             <span className={cn(
                 "flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full font-teko text-lg transition-transform group-hover:scale-110",
-                team.totalPoints > 0 ? (
-                    rankToDisplay === 1 ? "bg-yellow-500 text-black font-bold" :
-                        rankToDisplay === 2 ? "bg-zinc-400 text-black font-bold" :
-                            rankToDisplay === 3 ? "bg-orange-700 text-white font-bold" :
-                                "text-zinc-500 bg-zinc-800/50"
-                ) : "text-zinc-700 bg-zinc-900/50"
+                rankToDisplay === 1 ? "bg-yellow-500 text-black font-bold" :
+                    rankToDisplay === 2 ? "bg-zinc-400 text-black font-bold" :
+                        rankToDisplay === 3 ? "bg-orange-700 text-white font-bold" :
+                            "text-zinc-500 bg-zinc-800/50"
             )}>
-                {team.totalPoints > 0 ? rankToDisplay : "-"}
+                {rankToDisplay}
             </span>
         </div>
         <div className="flex items-center gap-2 overflow-hidden">
@@ -263,8 +261,7 @@ export default function Leaderboard() {
         }
 
         // CASE 2: Global Season Leaderboard
-        // Filter out teams with 0 points to avoid showing "initialized" teams that haven't played
-        let dataToUse = verifiedTeams.filter(t => t.totalPoints > 0 || t.wins > 0);
+        let dataToUse = verifiedTeams;
 
         // Fallback for demo/empty state
         if (dataToUse.length === 0 && !currentSeasonId) {
