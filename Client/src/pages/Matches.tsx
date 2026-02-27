@@ -78,13 +78,14 @@ export default function Matches() {
 
     const { request: updateMatchRequest } = useAxios<any>();
     const [showEditRoomModal, setShowEditRoomModal] = useState(false);
-    const [roomDetails, setRoomDetails] = useState({ roomId: "", password: "" });
+    const [roomDetails, setRoomDetails] = useState({ roomId: "", password: "", dateTime: "" });
 
     const handleOpenEditRoom = () => {
         if (!selectedMatch) return;
         setRoomDetails({
             roomId: selectedMatch.roomId || "",
-            password: selectedMatch.password || ""
+            password: selectedMatch.password || "",
+            dateTime: selectedMatch.dateTime ? getLocalDatetimeString(new Date(selectedMatch.dateTime)) : getLocalDatetimeString()
         });
         setShowEditRoomModal(true);
     };
@@ -93,10 +94,14 @@ export default function Matches() {
         e.preventDefault();
         if (!selectedMatch) return;
         try {
+            const dataToSubmit = {
+                ...roomDetails,
+                dateTime: new Date(roomDetails.dateTime).toISOString()
+            };
             const data = await updateMatchRequest({
                 url: `matches/${selectedMatch._id}`,
                 method: 'PUT',
-                data: roomDetails
+                data: dataToSubmit
             });
             if (data) {
                 setMatches(prev => prev.map(m => m._id === data._id ? data : m));
@@ -390,7 +395,7 @@ export default function Matches() {
                                                 onClick={handleOpenEditRoom}
                                                 className="border-zinc-500/20 text-zinc-400 hover:bg-zinc-800 hover:text-white rounded-xl h-12 font-bold px-6"
                                             >
-                                                <Edit2 className="w-4 h-4 mr-2" /> EDIT ROOM
+                                                <Edit2 className="w-4 h-4 mr-2" /> EDIT MATCH INTEL
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -562,6 +567,22 @@ export default function Matches() {
                             </div>
 
                             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-zinc-800">
+                                <div className="flex justify-end mb-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (selectedTeamIds.length === verifiedTeams.length) {
+                                                setSelectedTeamIds([]);
+                                            } else {
+                                                setSelectedTeamIds(verifiedTeams.map(t => t._id));
+                                            }
+                                        }}
+                                        className="h-8 rounded-lg text-xs font-bold tracking-widest uppercase"
+                                    >
+                                        {selectedTeamIds.length === verifiedTeams.length ? "DESELECT ALL SQUADS" : "SELECT ALL SQUADS"}
+                                    </Button>
+                                </div>
                                 {verifiedTeams.map((team) => (
                                     <TeamCard
                                         key={team._id}
@@ -661,7 +682,7 @@ export default function Matches() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowEditRoomModal(false)} className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
                         <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-10 shadow-2xl">
                             <div className="flex justify-between items-center mb-10">
-                                <h2 className="text-3xl font-teko font-bold text-white uppercase tracking-wider">Edit <span className="text-yellow-500">Room Intel</span></h2>
+                                <h2 className="text-3xl font-teko font-bold text-white uppercase tracking-wider">Edit <span className="text-yellow-500">Match Intel</span></h2>
                                 <button onClick={() => setShowEditRoomModal(false)} className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 rounded-xl text-zinc-500 transition-colors border border-zinc-800"><X className="w-5 h-5" /></button>
                             </div>
 
@@ -673,6 +694,10 @@ export default function Matches() {
                                 <div className="space-y-2">
                                     <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Room Password</label>
                                     <input type="text" value={roomDetails.password} onChange={(e) => setRoomDetails({ ...roomDetails, password: e.target.value })} placeholder="PRIVATE" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-5 py-4 text-white font-teko text-2xl focus:border-yellow-500 outline-none" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Schedule Date/Time</label>
+                                    <input type="datetime-local" required value={roomDetails.dateTime} onChange={(e) => setRoomDetails({ ...roomDetails, dateTime: e.target.value })} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-5 py-4 text-zinc-300 font-teko text-2xl focus:border-yellow-500 outline-none" />
                                 </div>
 
                                 <div className="mt-8 pt-6 border-t border-zinc-800/50 flex gap-4">
