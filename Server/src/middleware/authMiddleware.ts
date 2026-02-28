@@ -6,26 +6,35 @@ interface AuthRequest extends Request {
     user?: any;
 }
 
-export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     let token;
     console.log('Protect middleware triggered');
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
-            const decoded: any = jwt.verify(token!, process.env.JWT_SECRET!);
+            const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
             req.user = await User.findById(decoded.id).select('-password');
-            console.log('User authorized:', req.user?.email);
-            next();
+
+            if (!req.user) {
+                console.warn('Authorization failed: User no longer exists in DB');
+                res.status(401).json({ message: 'Not authorized, user not found' });
+                return;
+            }
+
+            console.log('User authorized:', req.user.email);
+            return next();
         } catch (error) {
             console.error('Authorization failed:', error);
             res.status(401).json({ message: 'Not authorized, token failed' });
+            return;
         }
     }
 
     if (!token) {
         console.warn('No token provided');
         res.status(401).json({ message: 'Not authorized, no token' });
+        return;
     }
 };
 
