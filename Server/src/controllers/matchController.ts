@@ -27,7 +27,9 @@ const recalculateGlobalStandings = async (seasonId: any) => {
                 if (teamResult) {
                     totalKills += Number(teamResult.kills || 0);
                     placementPoints += Number(teamResult.placementPoints || 0);
-                    if (teamResult.rank === 1) wins += 1;
+                    // Use explicit wins if available, fallback to rank === 1 for older legacy matches
+                    const matchWins = teamResult.wins !== undefined ? Number(teamResult.wins) : (teamResult.rank === 1 ? 1 : 0);
+                    wins += matchWins;
                 }
             });
 
@@ -77,6 +79,7 @@ export const addTeamsToMatch = async (req: Request, res: Response) => {
                 placementPoints: 0,
                 totalPoints: 0,
                 rank: 0,
+                wins: 0,
                 alivePlayers: 4
             }));
 

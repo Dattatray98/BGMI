@@ -97,7 +97,7 @@ export default function UpdateScore() {
                     totalKills: matchResult ? Number(matchResult.kills) : (matchId ? 0 : Number((team as any).totalKills || 0)),
                     placementPoints: matchResult ? Number(matchResult.placementPoints) : (matchId ? 0 : Number((team as any).placementPoints || 0)),
                     totalPoints: matchResult ? (Number(matchResult.totalPoints) || (Number(matchResult.kills) + Number(matchResult.placementPoints))) : (matchId ? 0 : Number((team as any).totalPoints || 0)),
-                    wins: matchResult ? (matchResult.rank === 1 ? 1 : 0) : (matchId ? 0 : Number((team as any).wins || 0)),
+                    wins: matchResult ? Number(matchResult.wins ?? (matchResult.rank === 1 ? 1 : 0)) : (matchId ? 0 : Number((team as any).wins || 0)),
                     alivePlayers: matchResult ? Number(matchResult.alivePlayers ?? 4) : Number((team as any).alivePlayers ?? 4)
                 };
             })
@@ -154,6 +154,7 @@ export default function UpdateScore() {
                 kills: team.totalKills,
                 placementPoints: team.placementPoints,
                 totalPoints: team.totalPoints,
+                wins: team.wins,
                 rank: 0, // Server will calculate rank on finish
                 alivePlayers: team.alivePlayers
             }));

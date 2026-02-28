@@ -72,7 +72,6 @@ export default function MatchIntel() {
                     hasStartedCountdown = false;
                     setTimeout(() => {
                         setIsTransitioning(false);
-                        navigate(`/leaderboard?matchId=${match._id}`);
                     }, 4000);
                 }
                 setTimeLeft(null);
@@ -126,7 +125,7 @@ export default function MatchIntel() {
                                 transition={{ delay: 0.4, duration: 0.5 }}
                                 className="text-7xl md:text-[10rem] font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-red-400 to-red-600 tracking-[0.2em] uppercase leading-none drop-shadow-[0_0_40px_rgba(239,68,68,0.8)] text-center italic"
                             >
-                                DEPLOYMENT<br />AUTHORIZED
+                                Match Starting<br /> With In
                             </motion.h1>
                             <motion.p
                                 initial={{ opacity: 0 }}
