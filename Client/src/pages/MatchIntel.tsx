@@ -88,7 +88,7 @@ export default function MatchIntel() {
         return (
             <div className="h-screen w-screen bg-black flex flex-col items-center justify-center gap-8 text-center overflow-hidden">
                 <div className="w-24 h-24 border-8 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
-                <p className="text-yellow-500 font-teko text-4xl tracking-[0.2em] animate-pulse uppercase">Starting Match Intel...</p>
+                <p className="text-yellow-500 font-teko text-4xl tracking-[0.2em] animate-pulse uppercase">Loading...</p>
             </div>
         );
     }
@@ -134,7 +134,7 @@ export default function MatchIntel() {
                                 transition={{ delay: 1, duration: 0.5 }}
                                 className="mt-6 md:mt-10 text-xl md:text-2xl font-rajdhani font-bold text-red-400 tracking-[0.5em] uppercase border-y border-red-500/30 py-2 px-8"
                             >
-                                Commencing Live Operations...
+                                Loading...
                             </motion.p>
                         </motion.div>
                     </motion.div>

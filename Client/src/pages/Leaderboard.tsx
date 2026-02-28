@@ -325,7 +325,7 @@ export default function Leaderboard() {
                 </ScrollReveal>
 
                 {/* Unified Control Bar */}
-                {!isPublicMatchView && (
+                {user?.role === 'admin' && (
                     <div className="relative z-50 mb-6">
                         <ScrollReveal delay={0.1}>
                             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 p-2 border-b border-zinc-800 rounded-sm backdrop-blur-sm shadow-2xl relative z-40">
