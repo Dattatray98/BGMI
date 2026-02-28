@@ -1,6 +1,6 @@
 import { useLeaderboard } from "@/context/LeaderboardContext";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+import apiClient from "@/api/apiClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
@@ -18,7 +18,6 @@ import {
     X,
     AlertTriangle,
     Check,
-    Zap,
     ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,7 +47,7 @@ export default function Admin() {
             setLoading(true);
             try {
                 // Fetch season info
-                const seasonRes = await axios.get(`${import.meta.env.VITE_API_URL}/seasons`);
+                const seasonRes = await apiClient.get(`seasons`);
                 const currentSeason = seasonRes.data.find((s: any) => s._id === seasonId);
 
                 if (!currentSeason) {
@@ -81,18 +80,13 @@ export default function Admin() {
 
         setIsEnding(true);
         try {
-            const url = `${import.meta.env.VITE_API_URL}/seasons/${seasonId}`;
+            const url = `seasons/${seasonId}`;
             console.log("Terminating season at:", url);
 
-            await axios.put(url,
+            await apiClient.put(url,
                 {
                     status: 'Completed',
                     endDate: new Date().toISOString()
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${user?.token}`
-                    }
                 }
             );
 
@@ -158,27 +152,11 @@ export default function Admin() {
             allowedRoles: ['admin', 'registration_admin']
         },
         {
-            title: "Season Overview",
-            desc: "View historical data and statistics for this season.",
-            icon: Calendar,
-            href: `/admin/seasons`,
-            color: "from-orange-500/20 to-transparent",
-            allowedRoles: ['admin']
-        },
-        {
             title: "Global Leaderboard",
             desc: "Comprehensive standings for all matches this season.",
             icon: Eye,
             href: `/leaderboard?seasonId=${seasonId}`,
             color: "from-purple-500/20 to-transparent",
-            allowedRoles: ['admin']
-        },
-        {
-            title: "OBS Overlay",
-            desc: "Open the tactical browser source for OBS/streaming.",
-            icon: Zap,
-            href: `/overlay/${seasonId}`,
-            color: "from-yellow-400/20 to-transparent",
             allowedRoles: ['admin']
         },
         {

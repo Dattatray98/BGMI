@@ -133,7 +133,7 @@ export default function ObsOverlay() {
     }, [displayTeams.length]);
 
     // Notification Logic
-    const processQueue = React.useCallback(() => {
+    const processQueue = React.useCallback(function processNext() {
         if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
 
         isProcessingQueue.current = true;
@@ -146,7 +146,7 @@ export default function ObsOverlay() {
             setTimeout(() => {
                 setActiveNotification(null);
                 isProcessingQueue.current = false;
-                processQueue();
+                processNext();
             }, 1000); // exit anim wait
         }, 5000); // visible duration
     }, []);

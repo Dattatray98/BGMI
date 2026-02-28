@@ -8,7 +8,7 @@ import { type Team } from "@/constants/leaderboardData";
 import { Trophy, Crosshair, Users, Target, RefreshCw, LayoutGrid, List, ChevronDown, Calendar, ShieldCheck, Archive } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LEADERBOARD_DATA } from "@/constants/leaderboardData";
-import axios from "axios";
+import apiClient from "@/api/apiClient";
 
 // Table Header Component
 const TableHeader = () => (
@@ -37,7 +37,7 @@ const TeamRow = ({ team, rankToDisplay, isTop3 }: { team: Team, rankToDisplay: n
     >
         <div className="flex justify-center">
             <span className={cn(
-                "flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full font-teko text-lg transition-transform group-hover:scale-110",
+                "flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full font-teko text-3xl transition-transform group-hover:scale-110",
                 rankToDisplay === 1 ? "bg-yellow-500 text-black font-bold" :
                     rankToDisplay === 2 ? "bg-zinc-400 text-black font-bold" :
                         rankToDisplay === 3 ? "bg-orange-700 text-white font-bold" :
@@ -47,21 +47,21 @@ const TeamRow = ({ team, rankToDisplay, isTop3 }: { team: Team, rankToDisplay: n
             </span>
         </div>
         <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-6 h-6 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[15px] font-teko text-zinc-600 group-hover:border-yellow-500/50 group-hover:text-yellow-500 transition-all shrink-0">
+            <div className="w-7 h-7 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[20px] font-teko text-zinc-600 group-hover:border-yellow-500/50 group-hover:text-yellow-500 transition-all shrink-0">
                 {team.teamName.substring(0, 2).toUpperCase()}
             </div>
-            <span className="font-bold text-sm md:text-lg text-white group-hover:text-yellow-400 transition-colors uppercase tracking-tight truncate">
+            <span className="font-bold text-lg md:text-xl text-white group-hover:text-yellow-400 transition-colors uppercase tracking-tight truncate">
                 {team.teamName}
             </span>
         </div>
-        <div className="text-center font-rajdhani text-lg font-bold text-zinc-400">{team.totalKills}</div>
-        <div className="text-center font-rajdhani text-lg font-bold text-zinc-400">{team.placementPoints}</div>
+        <div className="text-center font-rajdhani text-2xl font-bold text-zinc-400">{team.totalKills}</div>
+        <div className="text-center font-rajdhani text-2xl font-bold text-zinc-400">{team.placementPoints}</div>
         <div className="text-center">
-            <span className="font-teko text-xl md:text-xl font-bold text-yellow-500 group-hover:scale-110 block transition-transform">
+            <span className="font-teko text-xl md:text-2xl font-bold text-yellow-500 group-hover:scale-110 block transition-transform">
                 {team.totalPoints}
             </span>
         </div>
-        <div className="text-center font-rajdhani text-lg font-bold text-zinc-400">{team.wins}</div>
+        <div className="text-center font-rajdhani text-2xl font-bold text-zinc-400">{team.wins}</div>
     </motion.div>
 );
 
@@ -76,7 +76,7 @@ export default function Leaderboard() {
     const [seasons, setSeasons] = useState<any[]>([]);
     const [isSeasonDropdownOpen, setIsSeasonDropdownOpen] = useState(false);
 
-    const [isSplitView, setIsSplitView] = useState(false);
+    const [isSplitView, setIsSplitView] = useState(true);
     const [currentMatch, setCurrentMatch] = useState<any>(null);
     const [matchLoading, setMatchLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
@@ -128,7 +128,7 @@ export default function Leaderboard() {
             }
             setMatchLoading(true);
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/matches/${matchId}`);
+                const response = await apiClient.get(`matches/${matchId}`);
                 setCurrentMatch(response.data);
                 if (response.data.seasonId?._id && response.data.seasonId._id !== currentSeasonId) {
                     setSeasonId(response.data.seasonId._id);
@@ -176,7 +176,7 @@ export default function Leaderboard() {
     useEffect(() => {
         const fetchSeasons = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/seasons`);
+                const response = await apiClient.get(`seasons`);
                 setSeasons(response.data);
 
                 // Priority 1: URL Param (if exists and different)
@@ -307,7 +307,7 @@ export default function Leaderboard() {
                                 </span>
                             </div>
                         )}
-                        <h1 className="text-4xl md:text-5xl font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 tracking-tighter drop-shadow-2xl uppercase mb-2">
+                        <h1 className="text-xl md:text-6xl font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 tracking-tighter drop-shadow-2xl uppercase mb-2">
                             {currentMatch ? (
                                 <>Match #{currentMatch.matchNumber} <span className="text-yellow-500">{currentMatch.mapName}</span></>
                             ) : (
@@ -315,22 +315,9 @@ export default function Leaderboard() {
                             )}
                         </h1>
 
-                        {currentMatch && (currentMatch.roomId || currentMatch.password) && (
-                            <div className="flex items-center justify-center gap-4 mb-4">
-                                {currentMatch.roomId && (
-                                    <div className="bg-zinc-900 border border-zinc-800 px-4 py-1 rounded-lg flex items-center gap-2">
-                                        <span className="text-7xl font-black text-zinc-500 uppercase tracking-widest">Room ID:</span>
-                                        <span className="font-teko text-7xl mt-2 font-bold text-yellow-500 tracking-wider">{currentMatch.roomId}</span>
-                                    </div>
-                                )}
-                                {currentMatch.password && (
-                                    <div className="bg-zinc-900 border border-zinc-800 px-4 py-1 rounded-lg flex items-center gap-2">
-                                        <span className="text-7xl font-black text-zinc-500 uppercase tracking-widest">Pass:</span>
-                                        <span className="font-teko text-7xl mt-2 font-bold text-yellow-500 tracking-wider">{currentMatch.password}</span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        <h2 className="text-xl md:text-3xl font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 tracking-tighter drop-shadow-2xl uppercase mb-2">In-Game Leaderboard</h2>
+
+
                         {!isPublicMatchView && currentMatch?.status === 'upcoming' && (
                             <p className="text-zinc-500 font-teko text-xl uppercase tracking-widest mt-2">Player Roster (Match Pending)</p>
                         )}

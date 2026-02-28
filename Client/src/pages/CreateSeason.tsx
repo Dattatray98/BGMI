@@ -6,8 +6,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { Calendar, Trophy, Gamepad2, Users, FileText, ArrowLeft, Loader2, CheckCircle2, ShieldAlert } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+
+import apiClient from "@/api/apiClient";
 
 interface SeasonForm {
     title: string;
@@ -21,7 +21,6 @@ interface SeasonForm {
 }
 
 export default function CreateSeason() {
-    const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -34,14 +33,10 @@ export default function CreateSeason() {
     const onSubmit = async (data: SeasonForm) => {
         setLoading(true);
         try {
-            const apiUrl = `${import.meta.env.VITE_API_URL}/seasons`;
+            const apiUrl = `seasons`;
             console.log("Deploying season to:", apiUrl);
 
-            const response = await axios.post(apiUrl, data, {
-                headers: {
-                    'Authorization': `Bearer ${user?.token}`
-                }
-            });
+            const response = await apiClient.post(apiUrl, data);
 
             if (response.status === 201 || response.status === 200) {
                 setIsSuccess(true);

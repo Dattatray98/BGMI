@@ -12,6 +12,31 @@
   display: none;
 }
 
+/* Global Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #facc15;
+  border-radius: 10px;
+  border: 1px solid #09090b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #eab308;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #facc15 #09090b;
+}
+
 
 @theme {
   --font-rajdhani: "Rajdhani", sans-serif;

@@ -1,0 +1,75 @@
+﻿
+D:\My_Learning\GENESIS-ESPORT\Client\src\components\ui\Button.tsx
+  46:34  warning  'asChild' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  58:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\context\AuthContext.tsx
+  45:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\context\LeaderboardContext.tsx
+  133:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\Leaderboard.tsx
+  115:8  warning  React Hook useEffect has a missing dependency: 'currentMatch'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\Login.tsx
+  23:18  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\MatchIntel.tsx
+  85:8  warning  React Hook useEffect has a missing dependency: 'navigate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\Matches.tsx
+  131:8  warning  React Hook useEffect has a missing dependency: 'resetForm'. Either include it or remove the dependency array                          react-hooks/exhaustive-deps
+  147:8  warning  React Hook useEffect has missing dependencies: 'fetchMatches' and 'fetchSeasons'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\ObsOverlay.tsx
+  149:17  error  Error: Cannot access variable before it is declared
+
+`processQueue` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\ObsOverlay.tsx:149:17
+  147 |                 setActiveNotification(null);
+  148 |                 isProcessingQueue.current = false;
+> 149 |                 processQueue();
+      |                 ^^^^^^^^^^^^ `processQueue` accessed before it is declared
+  150 |             }, 1000); // exit anim wait
+  151 |         }, 5000); // visible duration
+  152 |     }, []);
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\ObsOverlay.tsx:136:5
+  134 |
+  135 |     // Notification Logic
+> 136 |     const processQueue = React.useCallback(() => {
+      |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 137 |         if (isProcessingQueue.current || notificationQueue.current.length === 0) return;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 138 |
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 151 |         }, 5000); // visible duration
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 152 |     }, []);
+      | ^^^^^^^^^^^^ `processQueue` is declared here
+  153 |
+  154 |     const addNotification = React.useCallback((message: string, rank?: number) => {
+  155 |         notificationQueue.current.push({ message, rank });  react-hooks/immutability
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\TeamEntry.tsx
+  66:8  warning  React Hook useEffect has a missing dependency: 'currentSeasonId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\UpdateScore.tsx
+  124:26  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\My_Learning\GENESIS-ESPORT\Client\src\pages\UpdateScore.tsx:124:26
+  122 |     });
+  123 |
+> 124 |     const watchedTeams = watch("teams");
+      |                          ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  125 |
+  126 |     useEffect(() => {
+  127 |         reset({  react-hooks/incompatible-library
+
+Γ£û 12 problems (1 error, 11 warnings)
+

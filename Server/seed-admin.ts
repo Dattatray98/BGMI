@@ -4,7 +4,22 @@ import User from './src/models/User';
 
 dotenv.config();
 
-const createAdmin = async () => {
+const usersToSeed = [
+    {
+        name: 'Super Admin',
+        email: 'admin@gmail.com',
+        password: 'admin',
+        role: 'admin'
+    },
+    {
+        name: 'Registration Admin',
+        email: 'res@gmail.com',
+        password: 'resadmin',
+        role: 'registration_admin'
+    }
+];
+
+const seedAdmins = async () => {
     try {
         const uri = process.env.MONGODB_URI;
         if (!uri) throw new Error('MONGODB_URI not found');
@@ -13,24 +28,18 @@ const createAdmin = async () => {
         await mongoose.connect(uri);
         console.log('MongoDB Connected');
 
-        const email = 'Jojewardattatray@gmail.com';
-        const password = 'Devid@98';
+        for (const userData of usersToSeed) {
+            const userExists = await User.findOne({ email: userData.email });
 
-        const userExists = await User.findOne({ email });
-
-        if (userExists) {
-            console.log('Admin user already exists');
-            process.exit(0);
+            if (userExists) {
+                console.log(`${userData.role} already exists:`, userData.email);
+                // Optionally update if we want to reset passwords, but skipping is fine
+            } else {
+                const user = await User.create(userData);
+                console.log(`${userData.role} created successfully:`, user.email);
+            }
         }
 
-        const adminUser = await User.create({
-            name: 'Super Admin',
-            email,
-            password,
-            role: 'admin'
-        });
-
-        console.log('Admin user created successfully:', adminUser.email);
         process.exit(0);
     } catch (error: any) {
         console.error('Error:', error.message);
@@ -38,4 +47,4 @@ const createAdmin = async () => {
     }
 };
 
-createAdmin();
+seedAdmins();

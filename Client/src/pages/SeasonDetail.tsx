@@ -26,6 +26,8 @@ interface Match {
     mapName: string;
     dateTime: string;
     status: 'upcoming' | 'live' | 'completed';
+    roomId?: string;
+    password?: string;
     results?: any[];
 }
 
@@ -301,7 +303,7 @@ export default function SeasonDetail() {
                                         {filteredMatches.map((match, idx) => (
                                             <ScrollReveal key={match._id} delay={idx * 0.05}>
                                                 <div
-                                                    onClick={() => navigate(`/leaderboard?seasonId=${seasonId}&matchId=${match._id}`)}
+                                                    onClick={() => navigate(`/match/${match._id}`)}
                                                     className="bg-zinc-900/30 border border-zinc-800 hover:border-yellow-500/50 rounded-3xl p-6 group cursor-pointer transition-all duration-300 relative overflow-hidden"
                                                 >
                                                     <div className="flex justify-between items-start mb-6">

@@ -8,7 +8,7 @@ import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { Users, User, Phone, Mail, Trophy, FileText, Upload, CheckCircle2, AlertCircle, Loader2, Calendar } from "lucide-react";
 import { useLeaderboard } from "@/context/LeaderboardContext";
 import { useTeams } from "@/hooks/useTeams";
-import axios from "axios";
+import apiClient from "@/api/apiClient";
 
 interface TeamEntryForm {
     teamName: string;
@@ -43,7 +43,7 @@ export default function TeamEntry() {
     useEffect(() => {
         const fetchSeasons = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/seasons`);
+                const response = await apiClient.get(`seasons`);
                 const active = response.data.filter((s: any) => s.status === 'active');
                 setActiveSeasons(active);
 
