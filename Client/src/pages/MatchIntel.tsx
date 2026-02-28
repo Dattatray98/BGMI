@@ -105,53 +105,6 @@ export default function MatchIntel() {
 
     return (
         <div className="bg-zinc-950 h-screen w-screen overflow-hidden text-gray-100 font-rajdhani selection:bg-yellow-500 selection:text-black flex flex-col justify-center items-center relative">
-            <AnimatePresence>
-                {isTransitioning && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)", transition: { duration: 0.8 } }}
-                        className="fixed inset-0 z-9999 bg-black flex flex-col justify-center items-center overflow-hidden"
-                    >
-                        {/* Radar Sweep Background */}
-                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-                        <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                            className="absolute w-[150vw] h-[150vw] md:w-[200vw] md:h-[200vw] rounded-full"
-                            style={{ background: 'conic-gradient(from 0deg, transparent 70%, rgba(239,68,68,0.3) 100%)' }}
-                        />
-
-                        {/* Scope/Crosshair Overlay */}
-                        <motion.div
-                            initial={{ scale: 3, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
-                            className="relative z-10 flex flex-col items-center"
-                        >
-                            <Crosshair className="w-48 h-48 md:w-64 md:h-64 text-red-500/80 mb-6 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse" />
-                            <motion.h1
-                                initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4, duration: 0.5 }}
-                                className="text-7xl md:text-[8rem] font-teko font-black text-transparent bg-clip-text bg-linear-to-b from-red-400 to-red-600 tracking-[0.2em] uppercase leading-none drop-shadow-[0_0_40px_rgba(239,68,68,0.8)] text-center italic"
-                            >
-                                Match Starting<br /> With In
-                            </motion.h1>
-                            <motion.div
-                                key={overlayCountdown}
-                                initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, scale: 1.2 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-6 md:mt-10 text-6xl md:text-[8rem] font-teko font-bold text-red-500 tracking-[0.2em] uppercase py-2 px-8"
-                            >
-                                {overlayCountdown === 0 || overlayCountdown === null ? "MATCH STARTED" : overlayCountdown.toString()}
-                            </motion.div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* Tactical Grid Background */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-size-[60px_60px]"></div>
