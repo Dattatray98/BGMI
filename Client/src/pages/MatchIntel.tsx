@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
     Calendar,
     MapPin,
-    Timer,
     Lock,
     Key,
     Crosshair,
