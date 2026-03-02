@@ -9,7 +9,8 @@ import {
     Trophy,
     Users,
     LayoutDashboard,
-    Calendar
+    Calendar,
+    Search
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +22,7 @@ export default function AdminDashboard() {
     const { user } = useAuth();
     const { fetchSeasons, loading } = useSeasons();
     const [seasons, setSeasons] = useState<Season[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const loadSeasons = async () => {
@@ -45,6 +47,11 @@ export default function AdminDashboard() {
 
     const activeSeasons = seasons.filter(s => s.status === 'active');
     const archivedSeasons = seasons.filter(s => s.status === 'Completed');
+
+    const filteredArchivedSeasons = archivedSeasons.filter(season =>
+        season.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (season.subtitle && season.subtitle.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
 
     if (loading) {
         return (
@@ -228,48 +235,68 @@ export default function AdminDashboard() {
                         {archivedSeasons.length > 0 && (
                             <section className="pt-20 border-t border-zinc-900/50">
                                 <ScrollReveal>
-                                    <div className="flex items-center gap-4 mb-10">
-                                        <Archive className="w-6 h-6 text-zinc-600" />
-                                        <h2 className="text-3xl font-teko text-zinc-500 uppercase tracking-[0.2em]">Archived <span className="text-zinc-700">Records</span></h2>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                                        <div className="flex items-center gap-4">
+                                            <Archive className="w-6 h-6 text-zinc-600" />
+                                            <h2 className="text-3xl font-teko text-zinc-500 uppercase tracking-[0.2em]">Archived <span className="text-zinc-700">Records</span></h2>
+                                        </div>
+
+                                        <div className="relative w-full md:w-64">
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search archives..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="w-full bg-zinc-900/30 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/50 focus:bg-zinc-900/50 transition-all cursor-text text-left"
+                                            />
+                                        </div>
                                     </div>
                                 </ScrollReveal>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {archivedSeasons.map((season, index) => (
-                                        <ScrollReveal key={season._id} delay={index * 0.1}>
+                                <div className="space-y-4">
+                                    {filteredArchivedSeasons.map((season, index) => (
+                                        <ScrollReveal key={season._id} delay={index * 0.05}>
                                             <div
-                                                className="bg-zinc-900/20 border border-zinc-800/80 rounded-[2.5rem] p-8 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 hover:border-zinc-700 transition-all duration-500 group"
+                                                onClick={() => navigate(`/seasons/${season._id}`)}
+                                                className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-zinc-900/20 border border-zinc-800/80 rounded-2xl grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:border-zinc-700 hover:bg-zinc-900/40 transition-all duration-300 group cursor-pointer"
                                             >
-                                                <div className="flex items-center justify-between mb-8">
-                                                    <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                                                        <Archive className="w-6 h-6 text-zinc-500" />
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                                                        <Archive className="w-6 h-6 text-zinc-500 group-hover:text-yellow-500 transition-colors" />
                                                     </div>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700">
-                                                        ARCHIVED
-                                                    </span>
+                                                    <div>
+                                                        <h3 className="text-xl font-teko font-bold text-white uppercase tracking-wider mb-1">{season.title}</h3>
+                                                        <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">{season.subtitle}</p>
+                                                    </div>
                                                 </div>
 
-                                                <div className="space-y-1 mb-6">
-                                                    <h3 className="text-2xl font-teko font-bold text-white uppercase tracking-wider">{season.title}</h3>
-                                                    <p className="text-[10px] text-zinc-600 uppercase font-black tracking-widest">{season.subtitle}</p>
-                                                </div>
-
-                                                <div className="flex items-center gap-6 pt-6 border-t border-zinc-800/50">
-                                                    <div className="text-center flex-1">
-                                                        <div className="text-base font-teko text-zinc-400 font-bold uppercase">{season.gameName}</div>
-                                                        <div className="text-[8px] text-zinc-700 uppercase font-black tracking-[0.2em] mt-0.5">Arena</div>
+                                                <div className="flex items-center justify-between md:justify-end gap-6 md:gap-8 w-full md:w-auto">
+                                                    <div className="text-left md:text-right">
+                                                        <div className="text-[10px] text-zinc-600 uppercase font-black tracking-[0.2em] mb-1">Arena</div>
+                                                        <div className="text-sm font-teko text-zinc-400 font-bold uppercase">{season.gameName}</div>
                                                     </div>
-                                                    <div className="w-px h-6 bg-zinc-800" />
-                                                    <div className="text-center flex-1">
-                                                        <div className="text-base font-teko text-zinc-400 font-bold uppercase">
+                                                    <div className="w-px h-8 bg-zinc-800 hidden md:block" />
+                                                    <div className="text-left md:text-right">
+                                                        <div className="text-[10px] text-zinc-600 uppercase font-black tracking-[0.2em] mb-1">Timeline</div>
+                                                        <div className="text-sm font-teko text-zinc-400 font-bold uppercase">
                                                             {new Date(season.startDate).getFullYear()}
                                                         </div>
-                                                        <div className="text-[8px] text-zinc-700 uppercase font-black tracking-[0.2em] mt-0.5">Timeline</div>
+                                                    </div>
+                                                    <div className="w-px h-8 bg-zinc-800 hidden md:block" />
+                                                    <div className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700 text-[9px] font-black uppercase tracking-widest shrink-0 self-center">
+                                                        ARCHIVED
                                                     </div>
                                                 </div>
                                             </div>
                                         </ScrollReveal>
                                     ))}
+
+                                    {filteredArchivedSeasons.length === 0 && (
+                                        <div className="text-center py-12 bg-zinc-900/10 border border-dashed border-zinc-800 rounded-2xl">
+                                            <p className="text-zinc-500 text-sm uppercase tracking-widest">No archived records found.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
                         )}

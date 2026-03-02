@@ -40,7 +40,8 @@ export default function CreateSeason() {
 
             if (response.status === 201 || response.status === 200) {
                 setIsSuccess(true);
-                setTimeout(() => navigate('/admin/seasons'), 2000);
+                const newSeasonId = response.data._id;
+                setTimeout(() => navigate(`/admin/seasons/${newSeasonId}`), 2000);
             }
         } catch (error: any) {
             console.error("Error creating season:", error.response?.data || error.message);

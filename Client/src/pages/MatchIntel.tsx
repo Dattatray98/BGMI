@@ -32,9 +32,6 @@ export default function MatchIntel() {
     const navigate = useNavigate();
     const { request: fetchMatch, loading } = useAxios<Match>();
     const [match, setMatch] = useState<Match | null>(null);
-    const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
-    const [, setIsTransitioning] = useState(false);
-    const [, setOverlayCountdown] = useState<number | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -51,48 +48,6 @@ export default function MatchIntel() {
         };
         loadData();
     }, [matchId, fetchMatch]);
-
-    useEffect(() => {
-        if (!match) return;
-
-        let hasStartedCountdown = false;
-
-        const calculateTimeLeft = () => {
-            const difference = new Date(match.dateTime).getTime() - new Date().getTime();
-            if (difference > 0) {
-                hasStartedCountdown = true;
-                setTimeLeft({
-                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                    minutes: Math.floor((difference / 1000 / 60) % 60),
-                    seconds: Math.floor((difference / 1000) % 60)
-                });
-            } else {
-                if (hasStartedCountdown) {
-                    setIsTransitioning(true);
-                    hasStartedCountdown = false;
-
-                    setOverlayCountdown(3);
-
-                    let count = 3;
-                    const interval = setInterval(() => {
-                        count -= 1;
-                        if (count >= 0) {
-                            setOverlayCountdown(count);
-                        } else {
-                            clearInterval(interval);
-                            setIsTransitioning(false);
-                        }
-                    }, 1000);
-                }
-                setTimeLeft(null);
-            }
-        };
-
-        calculateTimeLeft();
-        const timer = setInterval(calculateTimeLeft, 1000);
-        return () => clearInterval(timer);
-    }, [match]);
 
     if (loading || !match) {
         return (
@@ -131,11 +86,7 @@ export default function MatchIntel() {
                 <div className="flex flex-col gap-6 lg:gap-10 xl:gap-12 flex-1 overflow-hidden">
                     {/* Header */}
                     <div className="text-center space-y-4 lg:space-y-6 shrink-0">
-                        <div className="px-6 py-2 rounded-2xl bg-yellow-500/10 text-yellow-500 text-xl font-black uppercase tracking-[0.3em] inline-flex items-center gap-3 mb-2 border border-yellow-500/20">
-                            <Timer className="w-6 h-6" />
-                            Pre-Match Status
-                        </div>
-                        <h1 className="text-6xl md:text-7xl lg:text-9xl font-teko font-black text-white uppercase tracking-tight leading-none drop-shadow-2xl">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-teko font-black text-white uppercase tracking-tight leading-none drop-shadow-2xl">
                             Match #{match.matchNumber} <span className="text-yellow-500">Details</span>
                         </h1>
                         <p className="text-zinc-400 uppercase tracking-[0.4em] font-bold text-xl md:text-2xl lg:text-3xl">
@@ -144,64 +95,38 @@ export default function MatchIntel() {
                     </div>
 
                     <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 min-h-0 items-center">
-                        {/* Timer Panel */}
+                        {/* Status Panel */}
                         <div className="lg:col-span-7 flex flex-col justify-center items-center relative h-full w-full">
                             <Crosshair className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 lg:w-xl lg:h-144 text-yellow-500 opacity-[0.03] animate-[spin_60s_linear_infinite] pointer-events-none" />
 
                             <div className="relative z-10 flex items-center justify-center gap-4 mb-10 lg:mb-16">
                                 <div className="h-px w-12 bg-yellow-500/30"></div>
-                                <h4 className="text-yellow-500/80 text-lg lg:text-2xl font-black uppercase tracking-[0.4em]">Time to Deployment</h4>
+                                <h4 className="text-yellow-500/80 text-lg lg:text-2xl font-black uppercase tracking-[0.4em]">Match Status</h4>
                                 <div className="h-px w-12 bg-yellow-500/30"></div>
                             </div>
 
-                            {match.status === 'upcoming' ? (
-                                <>
-                                    {timeLeft ? (
-                                        <div className="flex justify-center gap-6 md:gap-10 lg:gap-16 relative z-10 w-full mb-8">
-                                            {[
-                                                { label: 'Hours', value: timeLeft.hours },
-                                                { label: 'Minutes', value: timeLeft.minutes },
-                                                { label: 'Seconds', value: timeLeft.seconds }
-                                            ].map((unit, i) => (
-                                                <div key={i} className="flex flex-col items-center">
-                                                    <div className="flex items-center justify-center mb-3">
-                                                        <span className="text-5xl md:text-6xl lg:text-7xl xl:text-[6.5rem] font-teko font-bold text-white tracking-widest leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                                                            {unit.value.toString().padStart(2, '0')}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-[10px] md:text-xs lg:text-sm font-black text-yellow-500/70 uppercase tracking-[0.3em]">{unit.label}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="py-6 relative z-10 w-full text-center mb-6">
-                                            <h2 className="text-5xl md:text-7xl lg:text-[7rem] font-teko font-black text-yellow-500 tracking-[0.2em] uppercase leading-none animate-pulse drop-shadow-[0_0_30px_rgba(234,179,8,0.5)]">
-                                                Match Started
-                                            </h2>
-                                        </div>
-                                    )}
+                            <div className="py-8 relative z-10 w-full text-center mb-8">
+                                <h2 className={cn(
+                                    "text-4xl md:text-5xl lg:text-[5rem] font-teko font-black tracking-[0.2em] uppercase leading-none animate-pulse",
+                                    match.status === 'completed' ? "text-green-500 drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]" :
+                                        match.status === 'live' ? "text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]" :
+                                            "text-yellow-500 drop-shadow-[0_0_30px_rgba(234,179,8,0.5)]"
+                                )}>
+                                    {match.status === 'completed' ? 'COMPLETED' :
+                                        match.status === 'live' ? 'LIVE NOW' : 'UPCOMING'}
+                                </h2>
+                            </div>
 
-                                    <div className="relative z-10 flex gap-4 text-center mt-2 mb-8">
-                                        <div className="px-5 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg backdrop-blur-sm">
-                                            <span className="block text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Game Mode</span>
-                                            <span className="text-sm md:text-base font-bold text-white uppercase tracking-wider">{match.gameName}</span>
-                                        </div>
-                                        <div className="px-5 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg backdrop-blur-sm">
-                                            <span className="block text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Operation</span>
-                                            <span className="text-sm md:text-base font-bold text-white uppercase tracking-wider">Match #{match.matchNumber}</span>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="py-8 relative z-10 w-full text-center mb-8">
-                                    <h2 className={cn(
-                                        "text-6xl md:text-7xl lg:text-[7rem] font-teko font-black tracking-[0.2em] uppercase leading-none animate-pulse",
-                                        match.status === 'completed' ? "text-green-500 drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]" : "text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]"
-                                    )}>
-                                        {match.status === 'completed' ? 'MATCH COMPLETED' : 'MATCH STARTED'}
-                                    </h2>
+                            <div className="relative z-10 flex gap-4 text-center mt-2 mb-8">
+                                <div className="px-5 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg backdrop-blur-sm">
+                                    <span className="block text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Game Mode</span>
+                                    <span className="text-sm md:text-base font-bold text-white uppercase tracking-wider">{match.gameName}</span>
                                 </div>
-                            )}
+                                <div className="px-5 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg backdrop-blur-sm">
+                                    <span className="block text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Match Number</span>
+                                    <span className="text-sm md:text-base font-bold text-white uppercase tracking-wider">Match #{match.matchNumber}</span>
+                                </div>
+                            </div>
 
                             {/* View Leaderboard Button */}
                             <div className="relative z-10 mt-2">
@@ -262,7 +187,7 @@ export default function MatchIntel() {
                                         <MapPin className="w-5 h-5 lg:w-6 lg:h-6 text-yellow-500/70" />
                                         <span className="text-xs lg:text-sm font-black uppercase tracking-[0.4em] text-yellow-500/60">Map Area</span>
                                     </div>
-                                    <p className="text-4xl lg:text-5xl xl:text-6xl font-teko font-bold text-white tracking-wider uppercase opacity-90 leading-none wrap-break-word">
+                                    <p className="text-3xl lg:text-4xl xl:text-5xl font-teko font-bold text-white tracking-wider uppercase opacity-90 leading-none wrap-break-word">
                                         {match.mapName}
                                     </p>
                                 </div>
@@ -271,7 +196,7 @@ export default function MatchIntel() {
                                         <Calendar className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-500/70" />
                                         <span className="text-[10px] lg:text-xs font-black uppercase tracking-[0.4em] text-yellow-500/60">Schedule</span>
                                     </div>
-                                    <p className="text-4xl lg:text-5xl xl:text-6xl font-teko font-bold text-white tracking-wider pb-1 opacity-90 leading-none wrap-break-word">
+                                    <p className="text-3xl lg:text-4xl xl:text-5xl font-teko font-bold text-white tracking-wider pb-1 opacity-90 leading-none wrap-break-word">
                                         {new Date(match.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                     <p className="text-[10px] lg:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 lg:mt-2">
